@@ -1,31 +1,31 @@
 <?php
 
-// use Controllers\User;
+use Controllers\UserController;
+use Core\Request;
+use Core\Response;
+use Core\Router;
 
 require_once './autoload.php';
 
-// $urlList = [
-//     '/users/list' => [
-//         'GET' => [User::class, 'getUsersList'],
-//     ],
-// ];
+$urlList = [
+    '/users/list' => [
+        'GET' => [UserController::class, 'list'],
+    ],
+    '/users/get/{id}' => [
+        'GET' => [UserController::class, 'get'],
+    ],
+    '/users/update' => [
+        'PUT' => [UserController::class, 'update'],
+    ]
+];
 
-if (
-    is_string($_SERVER['REQUEST_URI']) &&
-    isset($urlList[$_SERVER['REQUEST_URI']]) &&
-    isset($_SERVER['REQUEST_METHOD']) &&
-    is_string($_SERVER['REQUEST_METHOD']) &&
-    isset($urlList[$_SERVER['REQUEST_URI']][$_SERVER['REQUEST_METHOD']])
-) {
-    [$controllerClass, $methodName] = $urlList[$_SERVER['REQUEST_URI']][$_SERVER['REQUEST_METHOD']];
-
-    if (class_exists($controllerClass) && method_exists($controllerClass, $methodName)) {
-        (new $controllerClass)->$methodName();
-    } else {
-        http_response_code(500);
-        echo 'Не найден класс контролера';
-    }
-} else {
-    http_response_code(404);
-    echo 'Страница не найдена';
+if (!is_string($_SERVER['REQUEST_URI']) || !is_string($_SERVER['REQUEST_METHOD'])) {
+    http_response_code(500);
+    die('Неверно настроен сервер');
 }
+
+$router = new Router($urlList);
+$request = new Request($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
+$response = new Response();
+
+$router->processRequest($request, $response);

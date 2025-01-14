@@ -4,24 +4,24 @@ namespace Core;
 
 class Request
 {
-    private string $uri;
-    private string $method;
+    private static string $uri;
+    private static string $method;
 
     public function __construct(string $uri, string $method)
     {
-        $this->uri = $uri;
-        $this->method = $method;
+        self::$uri = $uri;
+        self::$method = $method;
     }
 
     public function getData() {}
 
-    public function getRoute(): string
+    public static function getRoute(): string
     {
-        return $this->uri;
+        return self::$uri;
     }
 
-    public function getMethod(): string
+    public static function getMethod(): string
     {
-        return $this->method;
+        return self::$method;
     }
 }

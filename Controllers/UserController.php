@@ -2,20 +2,22 @@
 
 namespace Controllers;
 
+use Core\App;
 use Core\Request;
-use Core\Response;
 
 class UserController
 {
-    public function list(Request $request, Response $response): void
+    public function list(): void
     {
-        echo 'hello';
+        $data = 'hello';
+        echo $data;
     }
 
-    public function get(Request $request, Response $response, array $params): void
+    public function get(array $params): void
     {
-        echo 'hello user ' . $params[0] . ' and method ' . $request->getMethod();
+        $data = 'hello user ' . $params[0] . ' and method ' . Request::getMethod();
+        echo $data;
     }
 
-    public function update(Request $request, Response $response): void {}
+    public function update(): void {}
 }

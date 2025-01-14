@@ -1,9 +1,9 @@
 <?php
 
-use Controllers\UserController;
+use Core\App;
 use Core\Request;
-use Core\Response;
 use Core\Router;
+use Controllers\UserController;
 
 require_once './autoload.php';
 
@@ -19,13 +19,16 @@ $urlList = [
     ]
 ];
 
+$foldersPathRepositoriesAndServices = ['Repositories', 'Services'];
+
 if (!is_string($_SERVER['REQUEST_URI']) || !is_string($_SERVER['REQUEST_METHOD'])) {
     http_response_code(500);
     die('Неверно настроен сервер');
 }
 
-$router = new Router($urlList);
-$request = new Request($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
-$response = new Response();
+new Request($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
 
-$router->processRequest($request, $response);
+$router = new Router($urlList);
+$router->processRequest();
+
+new App($foldersPathRepositoriesAndServices);

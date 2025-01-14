@@ -2,8 +2,8 @@
 
 namespace Core;
 
+use Core\App;
 use Core\Request;
-use Core\Response;
 
 class Router
 {
@@ -15,11 +15,11 @@ class Router
         $this->routes = $routes;
     }
 
-    public function processRequest(Request $request, Response $response): void
+    public function processRequest(): void
     {
         $params = [];
-        $route = $request->getRoute();
-        $method = $request->getMethod();
+        $route = Request::getRoute();
+        $method = Request::getMethod();
         $unitsRoute = explode('/', $route);
 
         foreach ($unitsRoute as &$unit) {
@@ -49,10 +49,6 @@ class Router
 
         $controller = new $controllerClass();
 
-        if (count($params) > 0) {
-            $controller->$methodName($request, $response, $params);
-        } else {
-            $controller->$methodName($request, $response);
-        }
+        count($params) > 0 ? $controller->$methodName($params) : $controller->$methodName();
     }
 }

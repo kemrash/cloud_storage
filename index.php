@@ -26,9 +26,9 @@ if (!is_string($_SERVER['REQUEST_URI']) || !is_string($_SERVER['REQUEST_METHOD']
     die('Неверно настроен сервер');
 }
 
-new Request($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD'], $_POST, $_GET);
+$request = new Request($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD'], $_POST, $_GET);
+
+new App($request, $foldersPathRepositoriesAndServices);
 
 $router = new Router($urlList);
 $router->processRequest();
-
-new App($foldersPathRepositoriesAndServices);

@@ -2,7 +2,7 @@
 
 namespace Controllers;
 
-use Core\Request;
+use Core\App;
 
 class UserController
 {
@@ -14,7 +14,7 @@ class UserController
 
     public function get(array $params): void
     {
-        $data = 'hello user ' . $params[0] . ' and method ' . Request::getMethod() . '<br>';
+        $data = 'hello user ' . $params[0] . ' and method ' . App::getService('request')->getMethod() . '<br>';
         echo $data;
     }
 

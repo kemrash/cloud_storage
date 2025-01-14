@@ -2,13 +2,16 @@
 
 namespace Core;
 
+use Core\Request;
+
 class App
 {
-    private static array $data;
+    private static array $data = [];
     private static array $folders = [];
 
-    public function __construct(array $folders)
+    public function __construct(Request $request, array $folders)
     {
+        self::$data['request'] = $request;
         self::$folders = $folders;
     }
 

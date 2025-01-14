@@ -4,31 +4,31 @@ namespace Core;
 
 class Request
 {
-    private static string $uri;
-    private static string $method;
-    private static array $postData;
-    private static array $getData;
+    private string $uri;
+    private string $method;
+    private array $postData;
+    private array $getData;
 
     public function __construct(string $uri, string $method, array $postData = [], array $getData = [])
     {
-        self::$uri = $uri;
-        self::$method = $method;
-        self::$postData = $postData;
-        self::$getData = $getData;
+        $this->uri = $uri;
+        $this->method = $method;
+        $this->postData = $postData;
+        $this->getData = $getData;
     }
 
-    public static function getData(): array
+    public function getData(): array
     {
-        return array_merge(self::$postData, self::$getData);
+        return array_merge($this->postData, $this->getData);
     }
 
-    public static function getRoute(): string
+    public function getRoute(): string
     {
-        return parse_url(self::$uri, PHP_URL_PATH) ?? '/';
+        return parse_url($this->uri, PHP_URL_PATH) ?? '/';
     }
 
-    public static function getMethod(): string
+    public function getMethod(): string
     {
-        return self::$method;
+        return $this->method;
     }
 }

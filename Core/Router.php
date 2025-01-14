@@ -3,7 +3,6 @@
 namespace Core;
 
 use Core\App;
-use Core\Request;
 
 class Router
 {
@@ -18,8 +17,9 @@ class Router
     public function processRequest(): void
     {
         $params = [];
-        $route = Request::getRoute();
-        $method = Request::getMethod();
+        $request = App::getService('request');
+        $route = $request->getRoute();
+        $method = $request->getMethod();
         $unitsRoute = explode('/', $route);
 
         foreach ($unitsRoute as &$unit) {

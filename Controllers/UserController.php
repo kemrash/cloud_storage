@@ -4,17 +4,15 @@ namespace Controllers;
 
 use Core\App;
 use Core\Request;
-use Core\JSONResponse;
+use Core\ResponseFactory;
+use Core\Response\Response;
 
 class UserController
 {
-    public function list(): JSONResponse
+    public function list(): Response
     {
         $data = App::getService('userService')->getList();
-
-        $response = new JSONResponse();
-        $response->setHeaders('Content-Type: application/json');
-        $response->setData(json_encode($data));
+        $response = ResponseFactory::createResponse('json', json_encode($data));
 
         return $response;
     }

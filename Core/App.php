@@ -2,18 +2,9 @@
 
 namespace Core;
 
-use Core\Request;
-
 class App
 {
     private static array $data = [];
-    private static array $folders = [];
-
-    public function __construct(Request $request, array $folders)
-    {
-        self::$data['request'] = $request;
-        self::$folders = $folders;
-    }
 
     public static function getService(string $loverFirsLatterServiceName): mixed
     {
@@ -23,11 +14,12 @@ class App
 
         $className = ucfirst($loverFirsLatterServiceName);
 
-        foreach (self::$folders as $folder) {
-            if (class_exists($folder . '\\' . $className)) {
-                self::$data[$loverFirsLatterServiceName] = new ($folder . '\\' . $className)();
-                break;
-            }
+        if (class_exists('Repositories\\' . $className)) {
+            self::$data[$loverFirsLatterServiceName] = ('Repositories\\' . $className);
+        }
+
+        if (class_exists('Services\\' . $className)) {
+            self::$data[$loverFirsLatterServiceName] = new ('Services\\' . $className)();
         }
 
         if (!isset(self::$data[$loverFirsLatterServiceName])) {

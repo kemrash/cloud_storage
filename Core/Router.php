@@ -2,7 +2,8 @@
 
 namespace Core;
 
-use Core\App;
+use Core\Request;
+use Core\Response;
 
 class Router
 {
@@ -14,10 +15,9 @@ class Router
         $this->routes = $routes;
     }
 
-    public function processRequest(): void
+    public function processRequest(Request $request): ?Response
     {
         $params = [];
-        $request = App::getService('request');
         $route = $request->getRoute();
         $method = $request->getMethod();
         $unitsRoute = explode('/', $route);
@@ -36,19 +36,31 @@ class Router
             !is_array($this->routes[$route][$method]) ||
             count($this->routes[$route][$method]) !== 2
         ) {
+            $data = 'Страница не найдена';
+
+            $response = new Response();
+            $response->setData($data);
+
             http_response_code(404);
-            die('Страница не найдена');
+
+            return $response;
         }
 
         [$controllerClass, $methodName] = $this->routes[$route][$method];
 
         if (!class_exists($controllerClass) || !method_exists($controllerClass, $methodName)) {
+            $data = 'Не найден контроллер или экшен';
+
+            $response = new Response();
+            $response->setData($data);
+
             http_response_code(500);
-            die('Не найден контроллер или экшен');
+
+            return $response;
         }
 
         $controller = new $controllerClass();
 
-        count($params) > 0 ? $controller->$methodName($params) : $controller->$methodName();
+        return count($params) > 0 ? $controller->$methodName($request, $params) ?? null : $controller->$methodName($request) ?? null;
     }
 }

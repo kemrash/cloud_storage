@@ -2,12 +2,14 @@
 
 namespace Core;
 
-class Response
-{
-    protected string $header;
-    protected string $date;
+use Core\Response;
 
-    public function setHeaders(string $header): void {}
+class JSONResponse extends Response
+{
+    public function setHeaders(string $header): void
+    {
+        $this->header = $header;
+    }
 
     public function setData(string $data): void
     {
@@ -16,6 +18,7 @@ class Response
 
     public function send(): void
     {
+        header($this->header);
         echo $this->date;
     }
 }

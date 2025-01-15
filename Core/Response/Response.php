@@ -13,5 +13,5 @@ abstract class Response
         $this->statusCode = $statusCode;
     }
 
-    public function send(): void {}
+    abstract public function send(): void;
 }

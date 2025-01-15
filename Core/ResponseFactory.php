@@ -5,6 +5,7 @@ namespace Core;
 use Core\Response\HtmlResponse;
 use Core\Response\JsonResponse;
 use Core\Response\Response;
+use Exception;
 
 class ResponseFactory
 {
@@ -18,6 +19,9 @@ class ResponseFactory
             case 'html':
                 return new HtmlResponse($data, $statusCode);
                 break;
+
+            default:
+                throw new Exception("Неизвестный тип: $type");
         }
     }
 }

@@ -4,15 +4,14 @@ namespace Controllers;
 
 use Core\App;
 use Core\Request;
-use Core\ResponseFactory;
-use Core\Response\Response;
+use Core\Response;
 
 class UserController
 {
     public function list(): Response
     {
-        $data = App::getService('userService')->getList();
-        $response = ResponseFactory::createResponse('json', json_encode($data));
+        $data = App::getService('userService')->getUsersList();
+        $response = new Response('json', json_encode($data));
 
         return $response;
     }

@@ -3,8 +3,7 @@
 namespace Core;
 
 use Core\Request;
-use Core\Response\Response;
-use Core\ResponseFactory;
+use Core\Response;
 
 class Router
 {
@@ -37,7 +36,7 @@ class Router
             !is_array($this->routes[$route][$method]) ||
             count($this->routes[$route][$method]) !== 2
         ) {
-            $response = ResponseFactory::createResponse('html', 'Страница не найдена', 404);
+            $response = new Response('html', 'Страница не найдена', 404);
 
             return $response;
         }
@@ -45,7 +44,7 @@ class Router
         [$controllerClass, $methodName] = $this->routes[$route][$method];
 
         if (!class_exists($controllerClass) || !method_exists($controllerClass, $methodName)) {
-            $response = ResponseFactory::createResponse('html', 'Не найден контроллер или экшен', 500);
+            $response = new Response('html', 'Не найден контроллер или экшен', 500);
 
             return $response;
         }

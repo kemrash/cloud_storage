@@ -3,7 +3,7 @@
 use Core\App;
 use Core\Db;
 use Core\Request;
-use Core\ResponseFactory;
+use Core\Response;
 use Core\Router;
 use Controllers\UserController;
 
@@ -33,7 +33,15 @@ $router = new Router($urlList);
 $response = $router->processRequest($request);
 
 if ($response === null) {
-    $response = ResponseFactory::createResponse('html', 'Что то пошло не так');
+    $response = new Response('html', 'Что то пошло не так');
 }
 
-$response->send();
+http_response_code($response->getStatusCode());
+
+if ($response->getType() === 'json') {
+    header('Content-Type: application/json');
+} else if ($response->getHeader() !== '') {
+    header($response->getHeader());
+}
+
+echo $response->getData();

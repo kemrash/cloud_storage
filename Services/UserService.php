@@ -6,7 +6,7 @@ use Core\App;
 
 class UserService
 {
-    public function getList(): array
+    public function getUsersList(): array
     {
         return App::getService('userRepository')::findBy('role', 'age', 'gender');
     }

@@ -16,7 +16,18 @@ class UserController
         return $response;
     }
 
-    public function get(Request $request, array $params): void {}
+    public function get(array $params): Response
+    {
+        $data = App::getService('userService')->findUserById($params[0]);
+
+        if ($data !== null) {
+            $response = new Response('json', json_encode($data));
+        } else {
+            $response = new Response('html', 'Страница не найдена', 404);
+        }
+
+        return $response;;
+    }
 
     public function update(): void {}
 }

@@ -7,8 +7,9 @@ use PDO;
 
 class Db
 {
+    const ALLOWED_DATABASES = ['user'];
     private static ?Db $instance = null;
-    protected static PDO $connection;
+    private static PDO $connection;
 
     private function __construct()
     {
@@ -31,11 +32,59 @@ class Db
         return self::$instance;
     }
 
-    public static function findBy() {}
+    public static function findBy(string $dbName, array $columns, array $allowedColumns): array
+    {
+        if (!in_array($dbName, self::ALLOWED_DATABASES, true)) {
+            throw new Exception("Недопустимое имя базы данных");
+        }
 
-    public static function findOneBy() {}
+        $safeColumns = array_intersect($allowedColumns, $columns);
 
-    public static function findAll() {}
+        if (empty($safeColumns)) {
+            throw new Exception('Нет допустимых столбцов для выбора.');
+        }
 
-    public static function find() {}
+        $columnList = implode(', ', array_map(fn($col) => "`$col`", $safeColumns));
+
+        $sql = "SELECT {$columnList} FROM {$dbName}";
+
+        $statement = self::$connection->prepare($sql);
+        $statement->execute();
+
+        return $statement->fetchAll();
+    }
+
+    public static function findOneBy(string $dbName, array $params, array $allowedColumns): ?array
+    {
+        if (!in_array($dbName, self::ALLOWED_DATABASES, true)) {
+            throw new Exception("Недопустимое имя базы данных");
+        }
+
+        $conditions = [];
+        $bindings = [];
+
+        foreach ($params as $key => $value) {
+            if (!in_array($key, $allowedColumns, true)) {
+                throw new Exception("Недопустимая колонка: $key");
+            }
+
+            $conditions[] = "{$key} = :{$key}";
+            $bindings[$key] = $value;
+        }
+
+        $whereClause = implode(' AND ', $conditions);
+
+        $sql = "SELECT * FROM {$dbName} WHERE {$whereClause} LIMIT 1";
+
+        $statement = self::$connection->prepare($sql);
+        $statement->execute($bindings);
+
+        $result = $statement->fetch();
+
+        return $result ?: null;
+    }
+
+    // public static function findAll() {}
+
+    // public static function find() {}
 }

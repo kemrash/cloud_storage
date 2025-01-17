@@ -51,6 +51,6 @@ class Router
 
         $controller = new $controllerClass();
 
-        return (count($params) > 0 ? $controller->$methodName($request, $params) : $controller->$methodName($request)) ?? null;
+        return (count($params) > 0 ? $controller->$methodName($params, $request) : $controller->$methodName($request)) ?? null;
     }
 }

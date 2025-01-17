@@ -3,27 +3,19 @@
 namespace Repositories;
 
 use Core\Db;
-use Exception;
 
 class UserRepository extends DB
 {
-    public static function findBy(...$columns)
+    const DB_NAME = 'user';
+    const ALLOWED_COLUMNS = ['id', 'login', 'password_encrypted', 'role', 'age', 'gender'];
+
+    public static function findUsersBy(...$columns): array
     {
-        $allowedColumns = ['id', 'login', 'password_encrypted', 'role', 'age', 'gender'];
+        return parent::findBy(self::DB_NAME, $columns, self::ALLOWED_COLUMNS);
+    }
 
-        $safeColumns = array_intersect($allowedColumns, $columns);
-
-        if (empty($safeColumns)) {
-            throw new Exception('Нет допустимых столбцов для выбора.');
-        }
-
-        $columnList = implode(', ', array_map(fn($col) => "`$col`", $safeColumns));
-
-        $sql = "SELECT {$columnList} FROM user";
-
-        $statement = parent::$connection->prepare($sql);
-        $statement->execute();
-
-        return $statement->fetchAll();
+    public static function findOneUserBy(array $params)
+    {
+        return parent::findOneBy(self::DB_NAME, $params, self::ALLOWED_COLUMNS);
     }
 }

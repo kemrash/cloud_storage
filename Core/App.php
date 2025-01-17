@@ -18,7 +18,7 @@ class App
             self::$data[$loverFirsLatterServiceName] = ('Repositories\\' . $className);
         }
 
-        if (class_exists('Services\\' . $className)) {
+        if (class_exists('Services\\' . $className) || class_exists('Models\\' . $className)) {
             self::$data[$loverFirsLatterServiceName] = new ('Services\\' . $className)();
         }
 

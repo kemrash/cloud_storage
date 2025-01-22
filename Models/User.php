@@ -39,7 +39,7 @@ class User
 
     public static function isValidPassword(string $password): bool
     {
-        return mb_strlen($password, 'UTF-8') <= 150;
+        return mb_strlen($password, 'UTF-8') <= 255;
     }
 
     public static function isValidRole(string $role): bool
@@ -82,7 +82,7 @@ class User
     private function setPasswordEncrypted(string $password): void
     {
         if (!self::isValidPassword($password)) {
-            $textError = 'Поле password должно быть не более 150 символов';
+            $textError = 'Поле password должно быть не более 255 символов';
             ErrorApp::writeLog(get_class($this) . ': ' . $textError);
             throw new Exception($textError);
         }

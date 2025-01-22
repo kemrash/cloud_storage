@@ -56,7 +56,7 @@ class UserService
                     }
 
                     try {
-                        $user->passwordEncrypted = $params['password'];
+                        $user->passwordEncrypted = password_hash($params['password'], PASSWORD_DEFAULT);
                     } catch (Exception $e) {
                         $errors[] = $e->getMessage();
                     }
@@ -120,7 +120,17 @@ class UserService
     {
         $user = App::getService('userRepository')::getUserBy(['email' => $email]);
 
-        if ($user !== null && $user->passwordEncrypted === $password) {
+        if ($user !== null && password_verify($password, $user->passwordEncrypted)) {
+            if (password_needs_rehash($user->passwordEncrypted, PASSWORD_DEFAULT)) {
+                $user->passwordEncrypted = password_hash($password, PASSWORD_DEFAULT);
+
+                $data = App::getService('userRepository')::updateUser($user);
+
+                if ($data['status'] !== 'ok') {
+                    ErrorApp::writeLog((get_class() . ': Произошла ошибка при обновлении хеша пароля.'));
+                }
+            }
+
             App::setService('user', $user);
         }
     }

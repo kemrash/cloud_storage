@@ -2,31 +2,47 @@
 
 namespace Core;
 
+use Exception;
+
 class App
 {
+    private const FOLDERS = ['Repositories', 'Services', 'Models'];
     private static array $data = [];
 
     public static function getService(string $loverFirsLatterServiceName): mixed
     {
-        if (isset(self::$data[$loverFirsLatterServiceName])) {
+        if (self::issetClass($loverFirsLatterServiceName)) {
             return self::$data[$loverFirsLatterServiceName];
         }
 
         $className = ucfirst($loverFirsLatterServiceName);
 
-        if (class_exists('Repositories\\' . $className)) {
-            self::$data[$loverFirsLatterServiceName] = ('Repositories\\' . $className);
-        }
-
-        if (class_exists('Services\\' . $className) || class_exists('Models\\' . $className)) {
-            self::$data[$loverFirsLatterServiceName] = new ('Services\\' . $className)();
+        foreach (self::FOLDERS as $folder) {
+            if (class_exists($folder . '\\' . $className)) {
+                self::$data[$loverFirsLatterServiceName] = $folder === 'Repositories' ?
+                    ($folder . '\\' . $className) :
+                    self::$data[$loverFirsLatterServiceName] = new ($folder . '\\' . $className)();
+            }
         }
 
         if (!isset(self::$data[$loverFirsLatterServiceName])) {
-            http_response_code(500);
-            die('Не найден сервис или репозиторий');
+            throw new Exception('Не найден сервис или репозиторий');
         }
 
         return self::$data[$loverFirsLatterServiceName];
+    }
+
+    public static function setService(string $name, mixed $service): void
+    {
+        if (isset(self::$data[$name])) {
+            throw new Exception('Такое название уже зарегистрировано');
+        }
+
+        self::$data[$name] = $service;
+    }
+
+    public static function issetClass(string $name): bool
+    {
+        return isset(self::$data[$name]);
     }
 }

@@ -4,6 +4,7 @@ namespace Core;
 
 use Exception;
 use PDO;
+use PDOException;
 
 class Db
 {
@@ -20,7 +21,11 @@ class Db
 
     public function __wakeup()
     {
-        throw new Exception("Нельзя восстановить экземпляр");
+        $textError = "Нельзя восстановить экземпляр";
+
+        ErrorApp::writeLog($textError);
+
+        throw new Exception($textError);
     }
 
     public static function getConnection()
@@ -35,29 +40,43 @@ class Db
     public static function findBy(string $dbName, array $columns, array $allowedColumns): array
     {
         if (!in_array($dbName, self::ALLOWED_DATABASES, true)) {
-            throw new Exception("Недопустимое имя базы данных");
+            ErrorApp::writeLog("Недопустимое имя базы данных");
+
+            return [];
         }
 
         $safeColumns = array_intersect($allowedColumns, $columns);
 
         if (empty($safeColumns)) {
-            throw new Exception('Нет допустимых столбцов для выбора.');
+            ErrorApp::writeLog("Нет допустимых столбцов для выбора.");
+
+            return [];
         }
 
         $columnList = implode(', ', array_map(fn($col) => "`$col`", $safeColumns));
 
         $sql = "SELECT {$columnList} FROM {$dbName}";
 
-        $statement = self::$connection->prepare($sql);
-        $statement->execute();
+        try {
+            $statement = self::$connection->prepare($sql);
+            $statement->execute();
 
-        return $statement->fetchAll();
+            return $statement->fetchAll();
+        } catch (PDOException $e) {
+            ErrorApp::writeLog($e->getMessage());
+
+            return [];
+        }
     }
 
     public static function findOneBy(string $dbName, array $params, array $allowedColumns): ?array
     {
         if (!in_array($dbName, self::ALLOWED_DATABASES, true)) {
-            throw new Exception("Недопустимое имя базы данных");
+            $textError = "Недопустимое имя базы данных";
+
+            ErrorApp::writeLog($textError);
+
+            return ErrorApp::showError($textError);
         }
 
         $conditions = [];
@@ -65,7 +84,11 @@ class Db
 
         foreach ($params as $key => $value) {
             if (!in_array($key, $allowedColumns, true)) {
-                throw new Exception("Недопустимая колонка: $key");
+                $textError = "Недопустимая колонка: $key";
+
+                ErrorApp::writeLog($textError);
+
+                return ErrorApp::showError($textError);
             }
 
             $conditions[] = "{$key} = :{$key}";
@@ -76,12 +99,78 @@ class Db
 
         $sql = "SELECT * FROM {$dbName} WHERE {$whereClause} LIMIT 1";
 
-        $statement = self::$connection->prepare($sql);
-        $statement->execute($bindings);
+        try {
+            $statement = self::$connection->prepare($sql);
+            $statement->execute($bindings);
 
-        $result = $statement->fetch();
+            $result = $statement->fetch();
 
-        return $result ?: null;
+            return $result ?: null;
+        } catch (PDOException $e) {
+            ErrorApp::writeLog($e->getMessage());
+
+            return null;
+        }
+    }
+
+    public static function updateOneBy(string $dbName, array $paramsSet, array $paramsWhere, array $allowedColumns): array
+    {
+        if (!in_array($dbName, self::ALLOWED_DATABASES, true)) {
+            $textError = "Недопустимое имя базы данных";
+
+            ErrorApp::writeLog(get_class() . ': ' . $textError);
+
+            return ErrorApp::showError($textError);
+        }
+
+        $statementSettings = ['settingSet', 'settingWhere'];
+
+        foreach ($statementSettings as &$setting) {
+            $params = [];
+
+            if ($setting === 'settingSet') {
+                $params = $paramsSet;
+                $separator = ', ';
+            }
+
+            if ($setting === 'settingWhere') {
+                $params = $paramsWhere;
+                $separator = ' AND ';
+            }
+
+            $setting = [];
+            $setting['conditions'] = [];
+            $setting['bindings'] = [];
+
+
+            foreach ($params as $key => $value) {
+                if (!in_array($key, $allowedColumns, true)) {
+                    $textError = "Недопустимая колонка: $key";
+
+                    ErrorApp::writeLog(get_class() . ': ' . $textError);
+
+                    return ErrorApp::showError($textError);
+                }
+
+                $setting['conditions'][] = "{$key} = :{$key}";
+                $setting['bindings'][$key] = $value;
+            }
+
+            $setting['whereClause'] = implode($separator, $setting['conditions']);
+        }
+
+        $sql = "UPDATE {$dbName} SET {$statementSettings[0]['whereClause']} WHERE {$statementSettings[1]['whereClause']}";
+
+        try {
+            $statement = self::$connection->prepare($sql);
+            $statement->execute(array_merge($statementSettings[0]['bindings'], $statementSettings[1]['bindings']));
+
+            return ['status' => 'ok'];
+        } catch (PDOException $e) {
+            ErrorApp::writeLog(get_class() . ': ' . $e->getMessage());
+
+            return ErrorApp::showError();
+        }
     }
 
     // public static function findAll() {}

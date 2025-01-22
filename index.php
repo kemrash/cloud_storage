@@ -5,25 +5,31 @@ use Core\Db;
 use Core\Request;
 use Core\Response;
 use Core\Router;
-use Controllers\UserController;
 
 require_once './autoload.php';
 
 $urlList = [
     '/users/list' => [
-        'GET' => [UserController::class, 'list'],
+        'GET' => ['UserController', 'list'],
     ],
     '/users/get/{id}' => [
-        'GET' => [UserController::class, 'get'],
+        'GET' => ['UserController', 'get'],
     ],
     '/users/update' => [
-        'PUT' => [UserController::class, 'update'],
+        'PUT' => ['UserController', 'update'],
+    ],
+    '/users/login' => [
+        'POST' => ['UserController', 'login'],
+    ],
+    '/users/logout' => [
+        'GET' => ['UserController', 'logout'],
+    ],
+    '/' => [
+        'GET' => ['IndexController', 'getIndexHtml'],
     ]
 ];
 
-parse_str(file_get_contents('php://input'), $PUT);
-
-$request = new Request($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD'], $_POST, $_GET, $PUT);
+$request = new Request();
 
 Db::getConnection();
 

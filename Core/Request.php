@@ -6,22 +6,21 @@ class Request
 {
     private string $uri;
     private string $method;
-    private array $postData;
-    private array $getData;
-    private array $putData;
+    private array $data;
 
-    public function __construct(string $uri, string $method, array $postData = [], array $getData = [], array $putData = [])
+    public function __construct()
     {
-        $this->uri = $uri;
-        $this->method = $method;
-        $this->postData = $postData;
-        $this->getData = $getData;
-        $this->putData = $putData;
+        $this->uri = $_SERVER['REQUEST_URI'];
+        $this->method = $_SERVER['REQUEST_METHOD'];
+        $this->data['POST'] = $_POST;
+        $this->data['GET'] = $_GET;
+        parse_str(file_get_contents('php://input'), $this->data['PUT']);
+        $this->data['FILES'] = $_FILES;
     }
 
     public function getData(): array
     {
-        return array_merge($this->postData, $this->getData, $this->putData);
+        return $this->data;
     }
 
     public function getRoute(): string

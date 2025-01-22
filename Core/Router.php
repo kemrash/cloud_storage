@@ -43,6 +43,8 @@ class Router
 
         [$controllerClass, $methodName] = $this->routes[$route][$method];
 
+        $controllerClass = 'Controllers\\' . $controllerClass;
+
         if (!class_exists($controllerClass) || !method_exists($controllerClass, $methodName)) {
             $response = new Response('html', 'Не найден контроллер или экшен', 500);
 

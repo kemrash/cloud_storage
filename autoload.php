@@ -1,5 +1,7 @@
 <?php
 
+require_once './vendor/autoload.php';
+
 function searchFile(string $folderPath, string $fileName, string $searchFolder, ?string &$searchPath = null): void
 {
     $dirContents = scandir($folderPath);

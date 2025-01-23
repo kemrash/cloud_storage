@@ -5,16 +5,21 @@ namespace Core;
 use Exception;
 use PDO;
 use PDOException;
+use Core\Config;
 
 class Db
 {
-    const ALLOWED_DATABASES = ['user'];
+    private const ALLOWED_DATABASES = ['user'];
+
     private static ?Db $instance = null;
     private static PDO $connection;
 
     private function __construct()
     {
-        self::$connection = new PDO('mysql:host=localhost;dbname=cloud_storage;charset=utf8', 'root');
+        $dbConnection = Config::getConfig('database');
+        $textConnection = 'mysql:host=' . $dbConnection['host'] . ';dbname=' . $dbConnection['name'] . ';charset=' . $dbConnection['charset'];
+
+        self::$connection = new PDO($textConnection, $dbConnection['user'], $dbConnection['password']);
     }
 
     private function __clone() {}

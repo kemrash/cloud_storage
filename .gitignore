@@ -1,3 +1,5 @@
 .vscode
-Templates/*
 error.log
+Templates/*
+Vendor
+/config.php

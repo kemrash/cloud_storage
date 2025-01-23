@@ -60,7 +60,7 @@ class User
     private function setId(int $id): void
     {
         if (!self::isValidId($id)) {
-            $textError = 'Поле id должно быть целое число больше 0';
+            $textError = 'Поле id должно быть целое число больше 0.';
             ErrorApp::writeLog(get_class($this) . ': ' . $textError);
             throw new Exception($textError);
         }
@@ -71,7 +71,7 @@ class User
     private function setEmail(string $email): void
     {
         if (!self::isValidEmail($email)) {
-            $textError = 'Поле email должно быть корректным email-адресом и длинной не более 150 символов';
+            $textError = 'Поле email должно быть корректным email-адресом и длинной не более 150 символов.';
             ErrorApp::writeLog(get_class($this) . ': ' . $textError);
             throw new Exception($textError);
         }
@@ -82,7 +82,7 @@ class User
     private function setPasswordEncrypted(string $password): void
     {
         if (!self::isValidPassword($password)) {
-            $textError = 'Поле password должно быть не более 255 символов';
+            $textError = 'Поле password должно быть не более 255 символов.';
             ErrorApp::writeLog(get_class($this) . ': ' . $textError);
             throw new Exception($textError);
         }
@@ -93,7 +93,7 @@ class User
     private function setRole(string $role): void
     {
         if (!self::isValidRole($role)) {
-            $textError = 'Поле role должно быть user или admin';
+            $textError = 'Поле role должно быть user или admin.';
             ErrorApp::writeLog(get_class($this) . ': ' . $textError);
             throw new Exception($textError);
         }
@@ -104,7 +104,7 @@ class User
     private function setAge(int|null $age): void
     {
         if (!self::isValidAge($age)) {
-            $textError = 'Поле age должно быть целое число больше 0';
+            $textError = 'Поле age должно быть целое число больше 0.';
             ErrorApp::writeLog(get_class($this) . ': ' . $textError);
             throw new Exception($textError);
         }
@@ -115,7 +115,7 @@ class User
     private function setGender(string|null $gender): void
     {
         if (!self::isValidGender($gender)) {
-            $textError = 'Поле gender должно быть male или female';
+            $textError = 'Поле gender должно быть male или female.';
             ErrorApp::writeLog(get_class($this) . ': ' . $textError);
             throw new Exception($textError);
         }

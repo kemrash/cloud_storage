@@ -39,15 +39,15 @@ class UserController
             return new Response('json', json_encode(ErrorApp::showError('Доступ запрещен')), 403);
         }
 
-        if (!isset($request->getData()['PUT']['id']) || $_SESSION['id'] !== (int) $request->getData()['PUT']['id']) {
-            return new Response('json', json_encode(ErrorApp::showError('Переданное поле id не совпадает с id пользователя')), 400);
-        }
+        // if (!isset($request->getData()['PUT']['id']) || $_SESSION['id'] !== (int) $request->getData()['PUT']['id']) {
+        //     return new Response('json', json_encode(ErrorApp::showError('Переданное поле id не совпадает с id пользователя')), 400);
+        // }
 
-        if (!isset($request->getData()['PUT']['email']) || !isset($request->getData()['PUT']['password']) || !isset($request->getData()['PUT']['role'])) {
-            return new Response('json', json_encode(ErrorApp::showError('Не переданы все обязательные поля: email, password или role')), 400);
-        }
+        // if (!isset($request->getData()['PUT']['email']) || !isset($request->getData()['PUT']['password']) || !isset($request->getData()['PUT']['role'])) {
+        //     return new Response('json', json_encode(ErrorApp::showError('Не переданы все обязательные поля: email, password или role')), 400);
+        // }
 
-        return App::getService('userService')->updateUser($request->getData()['PUT']);
+        return App::getService('userService')->updateUser($request->getData()['PUT'], (int) $_SESSION['id']);
     }
 
     public function login(Request $request): Response

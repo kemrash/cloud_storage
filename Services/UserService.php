@@ -25,10 +25,10 @@ class UserService
         return ['id' => $user->id, 'role' => $user->role, 'age' => $user->age, 'gender' => $user->gender];
     }
 
-    public function updateUser(array $params): Response
+    public function updateUser(array $params, int $id): Response
     {
         $errors = [];
-        $user = App::getService('userRepository')::getUserBy(['id' => (int) $params['id']]);
+        $user = App::getService('userRepository')::getUserBy(['id' => (int) $id]);
 
         if ($user === null) {
             return new Response('json', json_encode(ErrorApp::showError('Запрошенного пользователя не существует')), 400);
@@ -38,7 +38,7 @@ class UserService
             switch ($parameter) {
                 case 'email':
                     if (!isset($params['email'])) {
-                        $errors[] = 'Не передано поле email';
+                        $errors[] = 'Не передано поле email.';
                         break;
                     }
 
@@ -51,7 +51,7 @@ class UserService
 
                 case 'passwordEncrypted':
                     if (!isset($params['password'])) {
-                        $errors[] = 'Не передано поле password';
+                        $errors[] = 'Не передано поле password.';
                         break;
                     }
 
@@ -64,7 +64,7 @@ class UserService
 
                 case 'role':
                     if (!isset($params['role'])) {
-                        $errors[] = 'Не передано поле role';
+                        $errors[] = 'Не передано поле role.';
                         break;
                     }
 
@@ -104,7 +104,7 @@ class UserService
         }
 
         if (count($errors) > 0) {
-            return new Response('json', json_encode(ErrorApp::showError(implode(', ', $errors))), 400);
+            return new Response('json', json_encode(ErrorApp::showError(implode(' ', $errors))), 400);
         }
 
         $data = App::getService('userRepository')::updateUser($user);

@@ -35,11 +35,11 @@ class UserController
     {
         App::getService('session')->startSession();
 
-        if (!isset($_SESSION['id'])) {
+        if (!isset($_SESSION['id']) || isset($request->getData()['PUT']['id']) && $_SESSION['id'] !== (int) $request->getData()['PUT']['id']) {
             return new Response('json', json_encode(ErrorApp::showError('Доступ запрещен')), 403);
         }
 
-        return App::getService('userService')->updateUser($request->getData()['PUT'], (int) $_SESSION['id']);
+        return App::getService('userService')->updateUser($request->getData()['PUT'], (int) $_SESSION['id'], $_SESSION['role']);
     }
 
     public function login(Request $request): Response
@@ -60,7 +60,11 @@ class UserController
             return new Response('json', json_encode(ErrorApp::showError('Не все обязательные поля заполнены, или их значения не корректны')), 400);
         }
 
-        App::getService('userService')->loginUser($email, $password);
+        $data = App::getService('userService')->loginUser($email, $password);
+
+        if (isset($data['status']) && $data['status'] === 'error') {
+            return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
+        }
 
         if (!App::issetClass('user')) {
             return new Response('json', json_encode(ErrorApp::showError('Неправильный логин или пароль')), 401);
@@ -72,6 +76,10 @@ class UserController
 
         if (!isset($_SESSION['id'])) {
             $_SESSION['id'] = $user->id;
+        }
+
+        if (!isset($_SESSION['role'])) {
+            $_SESSION['role'] = $user->role;
         }
 
         return new Response('json', json_encode(['status' => 'ok']));

@@ -74,7 +74,7 @@ class Db
         }
     }
 
-    public static function findOneBy(string $dbName, array $params, array $allowedColumns): ?array
+    public static function findOneBy(string $dbName, array $params, array $allowedColumns): array
     {
         if (!in_array($dbName, self::$allowedDatabases, true)) {
             $textError = "Недопустимое имя базы данных";
@@ -110,11 +110,11 @@ class Db
 
             $result = $statement->fetch();
 
-            return $result ?: null;
+            return ['status' => 'ok', 'data' => $result ?: null];
         } catch (PDOException $e) {
             ErrorApp::writeLog($e->getMessage());
 
-            return null;
+            return ['status' => 'error', 'data' => null];
         }
     }
 
@@ -172,9 +172,16 @@ class Db
 
             return ['status' => 'ok'];
         } catch (PDOException $e) {
-            ErrorApp::writeLog(get_class() . ': ' . $e->getMessage());
+            $errorCode = $e->getCode();
 
-            return ErrorApp::showError();
+            if ($errorCode !== '23000') {
+                ErrorApp::writeLog(get_class() . ': ' . $e->getMessage());
+            }
+
+            $error = ErrorApp::showError();
+            $error['code'] = $errorCode;
+
+            return $error;
         }
     }
 

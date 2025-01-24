@@ -3,6 +3,7 @@
 namespace Services;
 
 use Core\App;
+use Core\Config;
 use Core\ErrorApp;
 use Core\Response;
 use Exception;
@@ -25,7 +26,7 @@ class UserService
         return ['id' => $user->id, 'role' => $user->role, 'age' => $user->age, 'gender' => $user->gender];
     }
 
-    public function updateUser(array $params, int $id): Response
+    public function updateUser(array $params, int $id, bool $isAdmin = false): Response
     {
         $errors = [];
         $user = App::getService('userRepository')::getUserBy(['id' => (int) $id]);
@@ -34,7 +35,7 @@ class UserService
             return new Response('json', json_encode(ErrorApp::showError('Запрошенного пользователя не существует')), 400);
         }
 
-        foreach ($user::ALLOWED_COLUMNS as $parameter) {
+        foreach (Config::getConfig('database.dbColumns.user') as $parameter) {
             switch ($parameter) {
                 case 'email':
                     if (!isset($params['email'])) {

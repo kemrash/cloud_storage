@@ -9,8 +9,7 @@ use Core\Config;
 
 class Db
 {
-    private const ALLOWED_DATABASES = ['user'];
-
+    private static array $allowedDatabases;
     private static ?Db $instance = null;
     private static PDO $connection;
 
@@ -20,6 +19,7 @@ class Db
         $textConnection = 'mysql:host=' . $dbConnection['host'] . ';dbname=' . $dbConnection['name'] . ';charset=' . $dbConnection['charset'];
 
         self::$connection = new PDO($textConnection, $dbConnection['user'], $dbConnection['password']);
+        self::$allowedDatabases = Config::getConfig('database.dbNames');
     }
 
     private function __clone() {}
@@ -44,7 +44,7 @@ class Db
 
     public static function findBy(string $dbName, array $columns, array $allowedColumns): array
     {
-        if (!in_array($dbName, self::ALLOWED_DATABASES, true)) {
+        if (!in_array($dbName, self::$allowedDatabases, true)) {
             ErrorApp::writeLog("Недопустимое имя базы данных");
 
             return [];
@@ -76,7 +76,7 @@ class Db
 
     public static function findOneBy(string $dbName, array $params, array $allowedColumns): ?array
     {
-        if (!in_array($dbName, self::ALLOWED_DATABASES, true)) {
+        if (!in_array($dbName, self::$allowedDatabases, true)) {
             $textError = "Недопустимое имя базы данных";
 
             ErrorApp::writeLog($textError);
@@ -120,7 +120,7 @@ class Db
 
     public static function updateOneBy(string $dbName, array $paramsSet, array $paramsWhere, array $allowedColumns): array
     {
-        if (!in_array($dbName, self::ALLOWED_DATABASES, true)) {
+        if (!in_array($dbName, self::$allowedDatabases, true)) {
             $textError = "Недопустимое имя базы данных";
 
             ErrorApp::writeLog(get_class() . ': ' . $textError);

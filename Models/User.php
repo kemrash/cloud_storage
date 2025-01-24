@@ -7,7 +7,6 @@ use Exception;
 
 class User
 {
-    public const ALLOWED_COLUMNS = ['id', 'email', 'passwordEncrypted', 'role', 'age', 'gender'];
     private const ALLOWED_ROLE = ['user', 'admin'];
 
     private int $id;

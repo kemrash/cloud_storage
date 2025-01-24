@@ -2,22 +2,22 @@
 
 namespace Repositories;
 
+use Core\Config;
 use Core\Db;
 use Models\User;
 
 class UserRepository extends DB
 {
     const DB_NAME = 'user';
-    const ALLOWED_COLUMNS = ['id', 'email', 'passwordEncrypted', 'role', 'age', 'gender'];
 
     public static function findUsersBy(...$columns): array
     {
-        return parent::findBy(self::DB_NAME, $columns, self::ALLOWED_COLUMNS);
+        return parent::findBy(self::DB_NAME, $columns, Config::getConfig('database.dbColumns.user'));
     }
 
     public static function getUserBy(array $params): ?User
     {
-        $data = parent::findOneBy(self::DB_NAME, $params, self::ALLOWED_COLUMNS);
+        $data = parent::findOneBy(self::DB_NAME, $params, Config::getConfig('database.dbColumns.user'));
 
         if ($data === null) {
             return null;
@@ -36,6 +36,6 @@ class UserRepository extends DB
             'gender' => $user->gender,
         ];
 
-        return parent::updateOneBy(self::DB_NAME, $setParams, ['id' => $user->id], self::ALLOWED_COLUMNS);
+        return parent::updateOneBy(self::DB_NAME, $setParams, ['id' => $user->id], Config::getConfig('database.dbColumns.user'));
     }
 }

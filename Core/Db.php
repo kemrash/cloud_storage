@@ -11,7 +11,7 @@ class Db
 {
     private static array $allowedDatabases;
     private static ?Db $instance = null;
-    private static PDO $connection;
+    protected static PDO $connection;
 
     private function __construct()
     {
@@ -74,14 +74,14 @@ class Db
         }
     }
 
-    public static function findOneBy(string $dbName, array $params, array $allowedColumns): array
+    public static function findOneBy(string $dbName, array $params, array $allowedColumns): ?array
     {
         if (!in_array($dbName, self::$allowedDatabases, true)) {
             $textError = "Недопустимое имя базы данных";
 
             ErrorApp::writeLog($textError);
 
-            return ErrorApp::showError($textError);
+            throw new Exception($textError);
         }
 
         $conditions = [];
@@ -93,7 +93,7 @@ class Db
 
                 ErrorApp::writeLog($textError);
 
-                return ErrorApp::showError($textError);
+                throw new Exception($textError);
             }
 
             $conditions[] = "{$key} = :{$key}";
@@ -110,11 +110,12 @@ class Db
 
             $result = $statement->fetch();
 
-            return ['status' => 'ok', 'data' => $result ?: null];
+            return $result ? $result : null;
         } catch (PDOException $e) {
-            ErrorApp::writeLog($e->getMessage());
+            $textError = $e->getMessage();
+            ErrorApp::writeLog(self::class . ': ' .  $textError);
 
-            return ['status' => 'error', 'data' => null];
+            throw new Exception($textError);
         }
     }
 

@@ -19,7 +19,7 @@ class UserService
     {
         $user = App::getService('userRepository')::getUserBy(['id' => (int) $id]);
 
-        if (is_array($user) && isset($user['status']) && $user['status'] === 'error' || $user === null) {
+        if ($user === null) {
             return null;
         }
 
@@ -29,9 +29,9 @@ class UserService
     public function updateUser(array $params, int $id, string $role): Response
     {
         $errors = [];
-        $user = App::getService('userRepository')::getUserBy(['id' => (int) $id]);
-
-        if (is_array($user) && isset($user['status']) && $user['status'] === 'error') {
+        try {
+            $user = App::getService('userRepository')::getUserBy(['id' => (int) $id]);
+        } catch (Exception $e) {
             return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
         }
 
@@ -87,13 +87,21 @@ class UserService
                     break;
 
                 case 'age':
-                    if (!isset($params['age'])) {
+
+                    if (!isset($params['age']) || $params['age'] === null) {
                         $user->age = null;
                         break;
                     }
 
+                    $age = $params['age'];
+
+                    if (!preg_match('/^\d+$/', $age) || $age < 0) {
+                        $errors[] = 'Поле age должно быть целое число больше 0.';
+                        break;
+                    }
+
                     try {
-                        $user->age = $params['age'];
+                        $user->age = $age;
                     } catch (Exception $e) {
                         $errors[] = $e->getMessage();
                     }

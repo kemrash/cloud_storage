@@ -24,6 +24,10 @@ $urlList = [
     '/users/logout' => [
         'GET' => ['UserController', 'logout'],
     ],
+    '/users/reset_password' => [
+        'GET' => ['ResetPasswordController', 'preparationResetPassword'],
+        'POST' => ['ResetPasswordController', 'resetPassword'],
+    ],
     '/' => [
         'GET' => ['IndexController', 'getIndexHtml'],
     ]

@@ -6,6 +6,7 @@ use Core\App;
 use Core\ErrorApp;
 use Core\Request;
 use Core\Response;
+use Exception;
 use Models\User;
 
 class UserController
@@ -20,15 +21,21 @@ class UserController
 
     public function get(array $params): Response
     {
-        $data = App::getService('userService')->getUserById($params[0]);
+        try {
+            $data = App::getService('userService')->getUserById($params[0]);
 
-        if ($data !== null) {
-            $response = new Response('json', json_encode($data));
-        } else {
-            $response = new Response('html', 'Страница не найдена', 404);
+            if ($data !== null) {
+                $response = new Response('json', json_encode($data));
+            } else {
+                $response = new Response('html', 'Страница не найдена', 404);
+            }
+
+            return $response;
+        } catch (Exception $e) {
+            ErrorApp::writeLog(self::class . ': ' . $e->getMessage());
+
+            return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
         }
-
-        return $response;;
     }
 
     public function update(Request $request): Response

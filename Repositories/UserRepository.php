@@ -15,19 +15,15 @@ class UserRepository extends DB
         return parent::findBy(self::DB_NAME, $columns, Config::getConfig('database.dbColumns.user'));
     }
 
-    public static function getUserBy(array $params): array|User|null
+    public static function getUserBy(array $params): ?User
     {
         $data = parent::findOneBy(self::DB_NAME, $params, Config::getConfig('database.dbColumns.user'));
 
-        if ($data['status'] !== 'ok') {
-            return $data;
-        }
-
-        if ($data['data'] === null) {
+        if ($data === null) {
             return null;
         }
 
-        return new User($data['data']['id'], $data['data']['email'], $data['data']['passwordEncrypted'], $data['data']['role'], $data['data']['age'], $data['data']['gender']);
+        return new User($data['id'], $data['email'], $data['passwordEncrypted'], $data['role'], $data['age'], $data['gender']);
     }
 
     public static function updateUser(User $user): array

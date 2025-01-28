@@ -12,7 +12,7 @@ use Models\ResetPassword;
 
 class ResetPasswordService
 {
-    public function createdResetPasswordAndSendEmail(string $email, int $expiresInMinutes = 30): Response
+    public function createdResetPasswordAndSendEmail(string $email, string $url, int $expiresInMinutes = 30): Response
     {
         $dateTime = new DateTime();
         $createdAt = $dateTime->format(Config::getConfig('app.dateTimeFormat'));
@@ -39,6 +39,8 @@ class ResetPasswordService
             $resetPassword = new ResetPassword($user->id, $hashedToken, $expiresAt, $createdAt);
 
             App::getService('resetPasswordRepository')::createdResetPassword($resetPassword);
+
+            $resetPassword->sendEmail($user->email, $url, $token);
 
             return new Response('json', json_encode(['status' => 'ok']));
         } catch (Exception $e) {

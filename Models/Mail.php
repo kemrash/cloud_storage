@@ -9,7 +9,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 
 class Mail
 {
-    public function sendMail(string $address, string $title, string $message): void
+    public function sendEmail(string $address, string $title, string $message): void
     {
         $mail = new PHPMailer();
         $connectionMailSMTP = Config::getConfig('mailSMTP');

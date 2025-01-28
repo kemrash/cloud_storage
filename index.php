@@ -26,7 +26,7 @@ $urlList = [
     ],
     '/users/reset_password' => [
         'GET' => ['ResetPasswordController', 'preparationResetPassword'],
-        'POST' => ['ResetPasswordController', 'resetPassword'],
+        'PATCH' => ['ResetPasswordController', 'resetPassword'],
     ],
     '/' => [
         'GET' => ['IndexController', 'getIndexHtml'],

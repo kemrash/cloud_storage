@@ -16,6 +16,18 @@ class Request
         $this->data['GET'] = $_GET;
         parse_str(file_get_contents('php://input'), $this->data['PUT']);
         $this->data['FILES'] = $_FILES;
+
+        $scheme = isset($_SERVER['REQUEST_SCHEME']) && is_string($_SERVER['REQUEST_SCHEME'])
+            ? $_SERVER['REQUEST_SCHEME']
+            : 'http';
+
+        $host = isset($_SERVER['HTTP_HOST']) && is_string($_SERVER['HTTP_HOST'])
+            ? $_SERVER['HTTP_HOST']
+            : 'localhost';
+
+        $this->data['originUrl'] = isset($_SERVER['HTTP_ORIGIN']) && is_string($_SERVER['HTTP_ORIGIN'])
+            ? $_SERVER['HTTP_ORIGIN']
+            : ($scheme . '://' . $host);
     }
 
     public function getData(): array

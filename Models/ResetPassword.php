@@ -2,7 +2,8 @@
 
 namespace Models;
 
-use DateTime;
+use Core\App;
+use Core\Config;
 
 class ResetPassword
 {
@@ -21,10 +22,26 @@ class ResetPassword
         $this->expiresAt = $expiresAt;
     }
 
-    public function __get($name)
+    public function __get($name): null|int|string
     {
         if (isset($this->$name)) {
             return $this->$name;
         }
+    }
+
+    public function sendEmail(string $email, string $url, string $token): void
+    {
+        $title = Config::getConfig('app.name') . ' - Восстановление пароля';
+        $message =  'Вы, либо кто-то, попросил восстановить пароль для вашего аккаунта на сайте ' .
+            Config::getConfig('app.name') .
+            '. Вы можете восстановить пароль перейдя по ссылке: ' .
+            $url .
+            '?id=' .
+            $this->userId .
+            '&token=' .
+            $token .
+            '. Если вы не запрашивали восстановление пароля, проигнорируйте это письмо.';
+
+        App::getService('mail')->sendEmail($email, $title, $message);
     }
 }

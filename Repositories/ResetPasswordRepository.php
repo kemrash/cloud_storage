@@ -4,6 +4,8 @@ namespace Repositories;
 
 use Core\Config;
 use Core\Db;
+use Core\ErrorApp;
+use Exception;
 use Models\ResetPassword;
 use PDO;
 
@@ -42,5 +44,35 @@ class ResetPasswordRepository extends Db
         $statement = parent::$connection->prepare('DELETE FROM ' . self::DB_NAME . ' WHERE expiresAt < :currentTime');
         $statement->bindValue('currentTime', $currentTime, PDO::PARAM_STR);
         $statement->execute();
+    }
+
+    public static function transactionUpdatePasswordUserAndDeleteResetPassword(int $id, string $passwordEncrypted): array
+    {
+        $connection = parent::$connection;
+        $updateUser = $connection->prepare("UPDATE user SET passwordEncrypted = :passwordEncrypted WHERE id = :id");
+        $deleteResetPassword = $connection->prepare("DELETE FROM " . self::DB_NAME . " WHERE userId = :userId");
+
+        $connection->beginTransaction();
+        try {
+            $updateUser->execute(['passwordEncrypted' => $passwordEncrypted, 'id' => $id]);
+            $deleteResetPassword->execute(['userId' => $id]);
+
+            if ($updateUser->rowCount() === 0 || $deleteResetPassword->rowCount() === 0) {
+                $connection->rollBack();
+
+                $textError = 'Не удалось обновить пользователя или удалить токен сброса пароля';
+
+                return ErrorApp::showError($textError);
+            }
+
+            $connection->commit();
+
+            return ['status' => 'ok'];
+        } catch (Exception $e) {
+            $connection->rollBack();
+            ErrorApp::writeLog(self::class . ': ' . $e->getMessage());
+
+            throw $e;
+        }
     }
 }

@@ -44,4 +44,9 @@ class ResetPassword
 
         App::getService('mail')->sendEmail($email, $title, $message);
     }
+
+    public function isValidToken(string $token): bool
+    {
+        return password_verify($token, $this->hashedToken);
+    }
 }

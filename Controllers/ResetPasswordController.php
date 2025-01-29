@@ -7,23 +7,76 @@ use Core\Config;
 use Core\ErrorApp;
 use Core\Request;
 use Core\Response;
+use Exception;
 
 class ResetPasswordController
 {
     public function preparationResetPassword(Request $request): Response
     {
-        if (!isset($request->getData()['GET']['email']) || !filter_var(trim($request->getData()['GET']['email']), FILTER_VALIDATE_EMAIL)) {
-            return new Response('json', json_encode(ErrorApp::showError('Не передан email, или его значение не корректно')), 400);
+        try {
+            App::getService('session')->startSession();
+        } catch (Exception $_) {
+            return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
         }
-
-        App::getService('session')->startSession();
 
         if (isset($_SESSION['id'])) {
             return new Response('json', json_encode(ErrorApp::showError('Вошедший пользователь не может сбросить пароль')), 403);
         }
 
+        $email = null;
+
+        if (!isset($request->getData()['GET']['email'])) {
+            return new Response('json', json_encode(ErrorApp::showError('Не передан email')), 400);
+        }
+
+        $email = trim($request->getData()['GET']['email']);
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return new Response('json', json_encode(ErrorApp::showError('Email не корректен')), 400);
+        }
+
         $url = $request->getData()['originUrl'] . $request->getRoute();
 
-        return App::getService('resetPasswordService')->createdResetPasswordAndSendEmail(trim($request->getData()['GET']['email']), $url, Config::getConfig('resetPassword.expiresInMinutes'));
+        return App::getService('resetPasswordService')->createdResetPasswordAndSendEmail($email, $url, Config::getConfig('resetPassword.expiresInMinutes'));
+    }
+
+    public function resetPassword(Request $request): Response
+    {
+        try {
+            App::getService('session')->startSession();
+        } catch (Exception $_) {
+            return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
+        }
+
+        if (isset($_SESSION['id'])) {
+            return new Response('json', json_encode(ErrorApp::showError('Вошедший пользователь не может сбросить пароль')), 403);
+        }
+
+        $id = null;
+        $token = null;
+        $password = null;
+        $errors = [];
+
+        if (!isset($request->getData()['GET']['id']) || !preg_match('/^\d+$/', $request->getData()['GET']['id'])) {
+            $errors[] = 'Не передан id или его значение не корректно';
+        }
+
+        if (!isset($request->getData()['GET']['token']) || !is_string($request->getData()['GET']['token'])) {
+            $errors[] = 'Не передан token или его значение не корректно';
+        }
+
+        if (!isset($request->getData()['PUT']['password']) || !is_string($request->getData()['PUT']['password'])) {
+            $errors[] = 'Не передан password или его значение не корректно';
+        }
+
+        if (count($errors) > 0) {
+            return new Response('json', json_encode(ErrorApp::showError(implode(', ', $errors))), 400);
+        }
+
+        $id = (int) trim($request->getData()['GET']['id']);
+        $token = trim($request->getData()['GET']['token']);
+        $password = trim($request->getData()['PUT']['password']);
+
+        return App::getService('resetPasswordService')->resetPassword($id, $token, $password);
     }
 }

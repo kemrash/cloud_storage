@@ -49,4 +49,38 @@ class ResetPasswordService
             return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
         }
     }
+
+    public function resetPassword(int $id, string $token, string $password): Response
+    {
+        $dateTime = new DateTime();
+        $currentDate = $dateTime->format(Config::getConfig('app.dateTimeFormat'));
+
+        try {
+            App::getService('resetPasswordRepository')::clearOldResetPassword($currentDate);
+
+            $resetPassword = App::getService('resetPasswordRepository')::getResetPasswordBy(['userId' => $id]);
+
+            if ($resetPassword === null) {
+                return new Response('json', json_encode(ErrorApp::showError("Не найден пользователь с id = {$id} или токен истек")), 404);
+            }
+
+            if (!$resetPassword->isValidToken($token)) {
+                return new Response('json', json_encode(ErrorApp::showError('Неверный токен')), 400);
+            }
+
+            $passwordEncrypted = password_hash($password, PASSWORD_DEFAULT);
+
+            $data = App::getService('resetPasswordRepository')::transactionUpdatePasswordUserAndDeleteResetPassword($id, $passwordEncrypted);
+
+            if ($data['status'] === 'error') {
+                return new Response('json', json_encode(ErrorApp::showError($data['data'])), 400);
+            }
+
+            return new Response('json', json_encode(['status' => 'ok']));
+        } catch (Exception $e) {
+            ErrorApp::writeLog(self::class . ': ' . $e->getMessage());
+
+            return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
+        }
+    }
 }

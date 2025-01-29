@@ -2,6 +2,10 @@
 
 namespace Models;
 
+use Core\App;
+use Core\ErrorApp;
+use Exception;
+
 class Session
 {
     private const SESSION_NAME = 'cloud_storage';
@@ -13,6 +17,24 @@ class Session
             'httponly' => true,
         ]);
         session_start();
+
+        if (isset($_SESSION['id'])) {
+            try {
+                $user = App::getService('userRepository')::getUserBy(['id' => (int) $_SESSION['id']]);
+
+                if ($user !== null) {
+                    $_SESSION['id'] = $user->id;
+                    $_SESSION['role'] = $user->role;
+                } else {
+                    $_SESSION['id'] = '';
+                    $_SESSION['role'] = '';
+                }
+            } catch (Exception $e) {
+                ErrorApp::writeLog(self::class . ': ' . $e->getMessage());
+
+                throw new Exception($e->getMessage());
+            }
+        }
     }
 
     public function destroySession(): void

@@ -40,7 +40,11 @@ class UserController
 
     public function update(Request $request): Response
     {
-        App::getService('session')->startSession();
+        try {
+            App::getService('session')->startSession();
+        } catch (Exception $_) {
+            return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
+        }
 
         if (!isset($_SESSION['id']) || isset($request->getData()['PUT']['id']) && $_SESSION['id'] !== (int) $request->getData()['PUT']['id']) {
             return new Response('json', json_encode(ErrorApp::showError('Доступ запрещен')), 403);
@@ -77,17 +81,16 @@ class UserController
             return new Response('json', json_encode(ErrorApp::showError('Неправильный логин или пароль')), 401);
         }
 
-        App::getService('session')->startSession();
+        try {
+            App::getService('session')->startSession();
+        } catch (Exception $_) {
+            return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
+        }
 
         $user = App::getService('user');
 
-        if (!isset($_SESSION['id'])) {
-            $_SESSION['id'] = $user->id;
-        }
-
-        if (!isset($_SESSION['role'])) {
-            $_SESSION['role'] = $user->role;
-        }
+        $_SESSION['id'] = $user->id;
+        $_SESSION['role'] = $user->role;
 
         return new Response('json', json_encode(['status' => 'ok']));
     }

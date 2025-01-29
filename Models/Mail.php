@@ -2,7 +2,7 @@
 
 namespace Models;
 
-use Core\ErrorApp;
+use Core\Helper;
 use Core\Config;
 use Exception;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -33,10 +33,10 @@ class Mail
             $mail->Body = $message;
 
             if (!$mail->send()) {
-                ErrorApp::writeLog(get_class($this) . ': ' . $mail->ErrorInfo);
+                Helper::writeLog(get_class($this) . ': ' . $mail->ErrorInfo);
             }
         } catch (Exception $e) {
-            ErrorApp::writeLog(get_class($this) . ': ' . $e->getMessage());
+            Helper::writeLog(get_class($this) . ': ' . $e->getMessage());
         }
     }
 }

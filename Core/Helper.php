@@ -4,7 +4,7 @@ namespace Core;
 
 use DateTime;
 
-class ErrorApp
+class Helper
 {
     public static function writeLog(string $text): void
     {

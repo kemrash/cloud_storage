@@ -4,7 +4,7 @@ namespace Services;
 
 use Core\App;
 use Core\Config;
-use Core\ErrorApp;
+use Core\Helper;
 use Core\Response;
 use Exception;
 
@@ -33,7 +33,7 @@ class UserService
         $user = App::getService('userRepository')::getUserBy(['id' => (int) $id]);
 
         if ($user === null) {
-            return new Response('json', json_encode(ErrorApp::showError('Запрошенного пользователя не существует')), 400);
+            return new Response('json', json_encode(Helper::showError('Запрошенного пользователя не существует')), 400);
         }
 
         foreach (Config::getConfig('database.dbColumns.user') as $parameter) {
@@ -120,13 +120,13 @@ class UserService
         }
 
         if (count($errors) > 0) {
-            return new Response('json', json_encode(ErrorApp::showError(implode(' ', $errors))), 400);
+            return new Response('json', json_encode(Helper::showError(implode(' ', $errors))), 400);
         }
 
         $data = App::getService('userRepository')::updateUser($user);
 
         if (isset($data['code']) && $data['code'] === '23000') {
-            return new Response('json', json_encode(ErrorApp::showError('Пользователь с таким email уже существует')), 400);
+            return new Response('json', json_encode(Helper::showError('Пользователь с таким email уже существует')), 400);
         }
 
         if ($data['status'] === 'error') {

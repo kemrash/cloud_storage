@@ -28,7 +28,7 @@ class Db
     {
         $textError = "Нельзя восстановить экземпляр";
 
-        ErrorApp::writeLog($textError);
+        Helper::writeLog($textError);
 
         throw new Exception($textError);
     }
@@ -45,7 +45,7 @@ class Db
     public static function findBy(string $dbName, array $columns, array $allowedColumns): array
     {
         if (!in_array($dbName, self::$allowedDatabases, true)) {
-            ErrorApp::writeLog("Недопустимое имя базы данных");
+            Helper::writeLog("Недопустимое имя базы данных");
 
             return [];
         }
@@ -53,7 +53,7 @@ class Db
         $safeColumns = array_intersect($allowedColumns, $columns);
 
         if (empty($safeColumns)) {
-            ErrorApp::writeLog("Нет допустимых столбцов для выбора.");
+            Helper::writeLog("Нет допустимых столбцов для выбора.");
 
             return [];
         }
@@ -68,7 +68,7 @@ class Db
 
             return $statement->fetchAll();
         } catch (PDOException $e) {
-            ErrorApp::writeLog($e->getMessage());
+            Helper::writeLog($e->getMessage());
 
             return [];
         }
@@ -79,7 +79,7 @@ class Db
         if (!in_array($dbName, self::$allowedDatabases, true)) {
             $textError = "Недопустимое имя базы данных";
 
-            ErrorApp::writeLog($textError);
+            Helper::writeLog($textError);
 
             throw new Exception($textError);
         }
@@ -91,7 +91,7 @@ class Db
             if (!in_array($key, $allowedColumns, true)) {
                 $textError = "Недопустимая колонка: $key";
 
-                ErrorApp::writeLog($textError);
+                Helper::writeLog($textError);
 
                 throw new Exception($textError);
             }
@@ -113,7 +113,7 @@ class Db
             return $result ? $result : null;
         } catch (PDOException $e) {
             $textError = $e->getMessage();
-            ErrorApp::writeLog(self::class . ': ' .  $textError);
+            Helper::writeLog(self::class . ': ' .  $textError);
 
             throw new Exception($e->getMessage());
         }
@@ -124,9 +124,9 @@ class Db
         if (!in_array($dbName, self::$allowedDatabases, true)) {
             $textError = "Недопустимое имя базы данных";
 
-            ErrorApp::writeLog(get_class() . ': ' . $textError);
+            Helper::writeLog(get_class() . ': ' . $textError);
 
-            return ErrorApp::showError($textError);
+            return Helper::showError($textError);
         }
 
         $statementSettings = ['settingSet', 'settingWhere'];
@@ -153,9 +153,9 @@ class Db
                 if (!in_array($key, $allowedColumns, true)) {
                     $textError = "Недопустимая колонка: $key";
 
-                    ErrorApp::writeLog(get_class() . ': ' . $textError);
+                    Helper::writeLog(get_class() . ': ' . $textError);
 
-                    return ErrorApp::showError($textError);
+                    return Helper::showError($textError);
                 }
 
                 $setting['conditions'][] = "{$key} = :{$key}";
@@ -176,13 +176,13 @@ class Db
             $errorCode = $e->getCode();
 
             if ($errorCode === '23000') {
-                $error = ErrorApp::showError();
+                $error = Helper::showError();
                 $error['code'] = $errorCode;
 
                 return $error;
             }
 
-            ErrorApp::writeLog(get_class() . ': ' . $e->getMessage());
+            Helper::writeLog(get_class() . ': ' . $e->getMessage());
 
             throw new Exception($e->getMessage());
         }

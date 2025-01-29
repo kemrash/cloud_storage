@@ -2,6 +2,7 @@
 
 use Core\App;
 use Core\Db;
+use Core\Helper;
 use Core\Request;
 use Core\Response;
 use Core\Router;
@@ -33,32 +34,33 @@ $urlList = [
     ]
 ];
 
-// try {
-$request = new Request();
+try {
+    $request = new Request();
 
-Db::getConnection();
+    Db::getConnection();
 
-new App();
+    new App();
 
-App::getService('session')->startSession();
+    App::getService('session')->startSession();
 
-$router = new Router($urlList);
-$response = $router->processRequest($request);
+    $router = new Router($urlList);
+    $response = $router->processRequest($request);
 
-if ($response === null) {
-    $response = new Response('html', 'Что то пошло не так');
+    if ($response === null) {
+        $response = new Response('html', 'Что то пошло не так');
+    }
+
+    http_response_code($response->getStatusCode());
+
+    if ($response->getType() === 'json') {
+        header('Content-Type: application/json');
+    } else if ($response->getHeader() !== '') {
+        header($response->getHeader());
+    }
+
+    echo $response->getData();
+} catch (Exception $e) {
+    Helper::writeLog('index.php' . ': ' .  $e->getMessage());
+    http_response_code(500);
+    echo 'Произошла ошибка сервера';
 }
-
-http_response_code($response->getStatusCode());
-
-if ($response->getType() === 'json') {
-    header('Content-Type: application/json');
-} else if ($response->getHeader() !== '') {
-    header($response->getHeader());
-}
-
-echo $response->getData();
-// } catch (Exception $e) {
-//     http_response_code(500);
-//     echo 'Произошла ошибка сервера';
-// }

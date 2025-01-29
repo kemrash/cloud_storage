@@ -4,7 +4,7 @@ namespace Repositories;
 
 use Core\Config;
 use Core\Db;
-use Core\ErrorApp;
+use Core\Helper;
 use Exception;
 use Models\ResetPassword;
 use PDO;
@@ -62,7 +62,7 @@ class ResetPasswordRepository extends Db
 
                 $textError = 'Не удалось обновить пользователя или удалить токен сброса пароля';
 
-                return ErrorApp::showError($textError);
+                return Helper::showError($textError);
             }
 
             $connection->commit();
@@ -70,7 +70,7 @@ class ResetPasswordRepository extends Db
             return ['status' => 'ok'];
         } catch (Exception $e) {
             $connection->rollBack();
-            ErrorApp::writeLog(self::class . ': ' . $e->getMessage());
+            Helper::writeLog(self::class . ': ' . $e->getMessage());
 
             throw $e;
         }

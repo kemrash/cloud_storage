@@ -3,7 +3,7 @@
 namespace Controllers;
 
 use Core\App;
-use Core\ErrorApp;
+use Core\Helper;
 use Core\Request;
 use Core\Response;
 use Models\User;
@@ -34,7 +34,7 @@ class UserController
     public function update(Request $request): Response
     {
         if (!isset($_SESSION['id']) || isset($request->getData()['PUT']['id']) && $_SESSION['id'] !== (int) $request->getData()['PUT']['id']) {
-            return new Response('json', json_encode(ErrorApp::showError('Доступ запрещен')), 403);
+            return new Response('json', json_encode(Helper::showError('Доступ запрещен')), 403);
         }
 
         return App::getService('userService')->updateUser($request->getData()['PUT'], (int) $_SESSION['id'], $_SESSION['role']);
@@ -55,13 +55,13 @@ class UserController
         }
 
         if ($email === null || $password === null) {
-            return new Response('json', json_encode(ErrorApp::showError('Не все обязательные поля заполнены, или их значения не корректны')), 400);
+            return new Response('json', json_encode(Helper::showError('Не все обязательные поля заполнены, или их значения не корректны')), 400);
         }
 
         App::getService('userService')->loginUser($email, $password);
 
         if (!App::issetClass('user')) {
-            return new Response('json', json_encode(ErrorApp::showError('Неправильный логин или пароль')), 401);
+            return new Response('json', json_encode(Helper::showError('Неправильный логин или пароль')), 401);
         }
 
         $user = App::getService('user');

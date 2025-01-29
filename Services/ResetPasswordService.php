@@ -4,7 +4,7 @@ namespace Services;
 
 use Core\App;
 use Core\Config;
-use Core\ErrorApp;
+use Core\Helper;
 use Core\Response;
 use DateTime;
 use Exception;
@@ -23,13 +23,13 @@ class ResetPasswordService
             $user = App::getService('userRepository')::getUserBy(['email' => $email]);
 
             if ($user === null) {
-                return new Response('json', json_encode(ErrorApp::showError("Не найден пользователь с email = {$email}")), 404);
+                return new Response('json', json_encode(Helper::showError("Не найден пользователь с email = {$email}")), 404);
             }
 
             $resetPassword = App::getService('resetPasswordRepository')::getResetPasswordBy(['userId' => $user->id]);
 
             if ($resetPassword !== null && DateTime::createFromFormat(Config::getConfig('app.dateTimeFormat'), $resetPassword->expiresAt) >= $dateTime) {
-                return new Response('json', json_encode(ErrorApp::showError('Ещё не прошло ' . $expiresInMinutes . ' минут с момента последнего запроса')), 400);
+                return new Response('json', json_encode(Helper::showError('Ещё не прошло ' . $expiresInMinutes . ' минут с момента последнего запроса')), 400);
             }
 
             $expiresAt = $dateTime->modify("+{$expiresInMinutes} minutes")->format(Config::getConfig('app.dateTimeFormat'));
@@ -44,9 +44,9 @@ class ResetPasswordService
 
             return new Response('json', json_encode(['status' => 'ok']));
         } catch (Exception $e) {
-            ErrorApp::writeLog(self::class . ': ' . $e->getMessage());
+            Helper::writeLog(self::class . ': ' . $e->getMessage());
 
-            return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
+            return new Response('json', json_encode(Helper::showError('Произошла ошибка сервера')), 500);
         }
     }
 
@@ -61,11 +61,11 @@ class ResetPasswordService
             $resetPassword = App::getService('resetPasswordRepository')::getResetPasswordBy(['userId' => $id]);
 
             if ($resetPassword === null) {
-                return new Response('json', json_encode(ErrorApp::showError("Не найден пользователь с id = {$id} или токен истек")), 404);
+                return new Response('json', json_encode(Helper::showError("Не найден пользователь с id = {$id} или токен истек")), 404);
             }
 
             if (!$resetPassword->isValidToken($token)) {
-                return new Response('json', json_encode(ErrorApp::showError('Неверный токен')), 400);
+                return new Response('json', json_encode(Helper::showError('Неверный токен')), 400);
             }
 
             $passwordEncrypted = password_hash($password, PASSWORD_DEFAULT);
@@ -73,14 +73,14 @@ class ResetPasswordService
             $data = App::getService('resetPasswordRepository')::transactionUpdatePasswordUserAndDeleteResetPassword($id, $passwordEncrypted);
 
             if ($data['status'] === 'error') {
-                return new Response('json', json_encode(ErrorApp::showError($data['data'])), 400);
+                return new Response('json', json_encode(Helper::showError($data['data'])), 400);
             }
 
             return new Response('json', json_encode(['status' => 'ok']));
         } catch (Exception $e) {
-            ErrorApp::writeLog(self::class . ': ' . $e->getMessage());
+            Helper::writeLog(self::class . ': ' . $e->getMessage());
 
-            return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
+            return new Response('json', json_encode(Helper::showError('Произошла ошибка сервера')), 500);
         }
     }
 }

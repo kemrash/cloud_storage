@@ -28,7 +28,7 @@ class Config
                 }
 
                 $textError = 'Несуществующий элемент конфигурации.';
-                ErrorApp::writeLog(self::class . ': ' . $textError);
+                Helper::writeLog(self::class . ': ' . $textError);
                 throw new Exception($textError);
             }
 

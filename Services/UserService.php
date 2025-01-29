@@ -6,6 +6,7 @@ use Core\App;
 use Core\Config;
 use Core\Helper;
 use Core\Response;
+use Core\Response\JSONResponse;
 use Exception;
 
 class UserService
@@ -33,7 +34,7 @@ class UserService
         $user = App::getService('userRepository')::getUserBy(['id' => (int) $id]);
 
         if ($user === null) {
-            return new Response('json', json_encode(Helper::showError('Запрошенного пользователя не существует')), 400);
+            return new JSONResponse(Helper::showError('Запрошенного пользователя не существует'), 400);
         }
 
         foreach (Config::getConfig('database.dbColumns.user') as $parameter) {
@@ -120,22 +121,22 @@ class UserService
         }
 
         if (count($errors) > 0) {
-            return new Response('json', json_encode(Helper::showError(implode(' ', $errors))), 400);
+            return new JSONResponse(Helper::showError(implode(' ', $errors)), 400);
         }
 
         $data = App::getService('userRepository')::updateUser($user);
 
         if (isset($data['code']) && $data['code'] === '23000') {
-            return new Response('json', json_encode(Helper::showError('Пользователь с таким email уже существует')), 400);
+            return new JSONResponse(Helper::showError('Пользователь с таким email уже существует'), 400);
         }
 
         if ($data['status'] === 'error') {
-            return new Response('json', json_encode($data), 400);
+            return new JSONResponse(Helper::showError('Ошибка обновления пользователя'), 400);
         }
 
         $_SESSION['role'] = $user->role;
 
-        return new Response('json', json_encode($data));
+        return new JSONResponse($data);
     }
 
     public function loginUser(string $email, string $password): void

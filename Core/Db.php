@@ -62,8 +62,9 @@ class Db
 
         $sql = "SELECT {$columnList} FROM {$dbName}";
 
+        $statement = self::$connection->prepare($sql);
+
         try {
-            $statement = self::$connection->prepare($sql);
             $statement->execute();
 
             return $statement->fetchAll();
@@ -104,8 +105,9 @@ class Db
 
         $sql = "SELECT * FROM {$dbName} WHERE {$whereClause} LIMIT 1";
 
+        $statement = self::$connection->prepare($sql);
+
         try {
-            $statement = self::$connection->prepare($sql);
             $statement->execute($bindings);
 
             $result = $statement->fetch();
@@ -167,8 +169,9 @@ class Db
 
         $sql = "UPDATE {$dbName} SET {$statementSettings[0]['whereClause']} WHERE {$statementSettings[1]['whereClause']}";
 
+        $statement = self::$connection->prepare($sql);
+
         try {
-            $statement = self::$connection->prepare($sql);
             $statement->execute(array_merge($statementSettings[0]['bindings'], $statementSettings[1]['bindings']));
 
             return ['status' => 'ok'];

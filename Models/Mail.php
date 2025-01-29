@@ -33,10 +33,12 @@ class Mail
             $mail->Body = $message;
 
             if (!$mail->send()) {
-                Helper::writeLog(get_class($this) . ': ' . $mail->ErrorInfo);
+                Helper::writeLog(self::class . ': ' . $mail->ErrorInfo);
             }
         } catch (Exception $e) {
-            Helper::writeLog(get_class($this) . ': ' . $e->getMessage());
+            Helper::writeLog(self::class . ': ' . $e->getMessage());
+
+            throw $e;
         }
     }
 }

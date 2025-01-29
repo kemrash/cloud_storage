@@ -42,7 +42,7 @@ class UserRepository extends DB
     public function updatePasswordById(int $id, string $passwordEncrypted): void
     {
         $connection = parent::$connection;
-        $updateUser = $connection->prepare("UPDATE user SET passwordEncrypted = :passwordEncrypted WHERE id = :id");
+        $updateUser = $connection->prepare("UPDATE " . self::DB_NAME . " SET passwordEncrypted = :passwordEncrypted WHERE id = :id");
         $updateUser->execute(['passwordEncrypted' => $passwordEncrypted, 'id' => $id]);
     }
 }

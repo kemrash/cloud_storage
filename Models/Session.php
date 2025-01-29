@@ -19,7 +19,7 @@ class Session
         if (isset($_SESSION['id'])) {
             $user = App::getService('userRepository')::getUserBy(['id' => (int) $_SESSION['id']]);
 
-            if ($user !== null) {
+            if ($user === null) {
                 $this->destroySession();
             }
 

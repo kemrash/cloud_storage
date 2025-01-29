@@ -6,6 +6,7 @@ use Core\App;
 use Core\Helper;
 use Core\Request;
 use Core\Response;
+use Core\Response\JSONResponse;
 use Models\User;
 
 class UserController
@@ -13,7 +14,7 @@ class UserController
     public function list(): Response
     {
         $data = App::getService('userService')->getUsersList();
-        $response = new Response('json', json_encode($data));
+        $response = new JSONResponse($data);
 
         return $response;
     }
@@ -23,7 +24,7 @@ class UserController
         $data = App::getService('userService')->getUserById($params[0]);
 
         if ($data !== null) {
-            $response = new Response('json', json_encode($data));
+            $response = new JSONResponse($data);
         } else {
             $response = new Response('html', 'Страница не найдена', 404);
         }
@@ -34,7 +35,7 @@ class UserController
     public function update(Request $request): Response
     {
         if (!isset($_SESSION['id']) || isset($request->getData()['PUT']['id']) && $_SESSION['id'] !== (int) $request->getData()['PUT']['id']) {
-            return new Response('json', json_encode(Helper::showError('Доступ запрещен')), 403);
+            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
         }
 
         return App::getService('userService')->updateUser($request->getData()['PUT'], (int) $_SESSION['id'], $_SESSION['role']);
@@ -55,13 +56,13 @@ class UserController
         }
 
         if ($email === null || $password === null) {
-            return new Response('json', json_encode(Helper::showError('Не все обязательные поля заполнены, или их значения не корректны')), 400);
+            return new JSONResponse(Helper::showError('Не все обязательные поля заполнены, или их значения не корректны'), 400);
         }
 
         App::getService('userService')->loginUser($email, $password);
 
         if (!App::issetClass('user')) {
-            return new Response('json', json_encode(Helper::showError('Неправильный логин или пароль')), 401);
+            return new JSONResponse(Helper::showError('Неправильный логин или пароль'), 401);
         }
 
         $user = App::getService('user');
@@ -69,13 +70,13 @@ class UserController
         $_SESSION['id'] = $user->id;
         $_SESSION['role'] = $user->role;
 
-        return new Response('json', json_encode(['status' => 'ok']));
+        return new JSONResponse();
     }
 
     public function logout(): Response
     {
         App::getService('session')->destroySession();
 
-        return new Response('json', json_encode(['status' => 'ok']));
+        return new JSONResponse();
     }
 }

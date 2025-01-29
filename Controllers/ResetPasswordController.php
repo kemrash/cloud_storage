@@ -7,25 +7,26 @@ use Core\Config;
 use Core\Helper;
 use Core\Request;
 use Core\Response;
+use Core\Response\JSONResponse;
 
 class ResetPasswordController
 {
     public function preparationResetPassword(Request $request): Response
     {
         if (isset($_SESSION['id'])) {
-            return new Response('json', json_encode(Helper::showError('Вошедший пользователь не может сбросить пароль')), 403);
+            return new JSONResponse(Helper::showError('Вошедший пользователь не может сбросить пароль'), 403);
         }
 
         $email = null;
 
         if (!isset($request->getData()['GET']['email'])) {
-            return new Response('json', json_encode(Helper::showError('Не передан email')), 400);
+            return new JSONResponse(Helper::showError('Не передан email'), 400);
         }
 
         $email = trim($request->getData()['GET']['email']);
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return new Response('json', json_encode(Helper::showError('Email не корректен')), 400);
+            return new JSONResponse(Helper::showError('Email не корректен'), 400);
         }
 
         $url = $request->getData()['originUrl'] . $request->getRoute();
@@ -36,7 +37,7 @@ class ResetPasswordController
     public function resetPassword(Request $request): Response
     {
         if (isset($_SESSION['id'])) {
-            return new Response('json', json_encode(Helper::showError('Вошедший пользователь не может сбросить пароль')), 403);
+            return new JSONResponse(Helper::showError('Вошедший пользователь не может сбросить пароль'), 403);
         }
 
         $id = null;
@@ -57,7 +58,7 @@ class ResetPasswordController
         }
 
         if (count($errors) > 0) {
-            return new Response('json', json_encode(Helper::showError(implode(', ', $errors))), 400);
+            return new JSONResponse(Helper::showError(implode(', ', $errors)), 400);
         }
 
         $id = (int) trim($request->getData()['GET']['id']);

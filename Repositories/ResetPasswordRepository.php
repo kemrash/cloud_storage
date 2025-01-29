@@ -25,7 +25,13 @@ class ResetPasswordRepository extends Db
         $statement->bindValue('expiresAt', $resetPassword->expiresAt, PDO::PARAM_STR);
         $statement->bindValue('createdAt', $resetPassword->createdAt, PDO::PARAM_STR);
 
-        $statement->execute();
+        try {
+            $statement->execute();
+        } catch (Exception $e) {
+            Helper::writeLog(self::class . ': ' . $e->getMessage());
+
+            throw $e;
+        }
     }
 
     public static function getResetPasswordBy(array $params): ?ResetPassword
@@ -43,7 +49,14 @@ class ResetPasswordRepository extends Db
     {
         $statement = parent::$connection->prepare('DELETE FROM ' . self::DB_NAME . ' WHERE expiresAt < :currentTime');
         $statement->bindValue('currentTime', $currentTime, PDO::PARAM_STR);
-        $statement->execute();
+
+        try {
+            $statement->execute();
+        } catch (Exception $e) {
+            Helper::writeLog(self::class . ': ' . $e->getMessage());
+
+            throw $e;
+        }
     }
 
     public static function transactionUpdatePasswordUserAndDeleteResetPassword(int $id, string $passwordEncrypted): array
@@ -53,6 +66,7 @@ class ResetPasswordRepository extends Db
         $deleteResetPassword = $connection->prepare("DELETE FROM " . self::DB_NAME . " WHERE userId = :userId");
 
         $connection->beginTransaction();
+
         try {
             $updateUser->execute(['passwordEncrypted' => $passwordEncrypted, 'id' => $id]);
             $deleteResetPassword->execute(['userId' => $id]);

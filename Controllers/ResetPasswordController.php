@@ -7,18 +7,11 @@ use Core\Config;
 use Core\ErrorApp;
 use Core\Request;
 use Core\Response;
-use Exception;
 
 class ResetPasswordController
 {
     public function preparationResetPassword(Request $request): Response
     {
-        try {
-            App::getService('session')->startSession();
-        } catch (Exception $_) {
-            return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
-        }
-
         if (isset($_SESSION['id'])) {
             return new Response('json', json_encode(ErrorApp::showError('Вошедший пользователь не может сбросить пароль')), 403);
         }
@@ -42,12 +35,6 @@ class ResetPasswordController
 
     public function resetPassword(Request $request): Response
     {
-        try {
-            App::getService('session')->startSession();
-        } catch (Exception $_) {
-            return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
-        }
-
         if (isset($_SESSION['id'])) {
             return new Response('json', json_encode(ErrorApp::showError('Вошедший пользователь не может сбросить пароль')), 403);
         }

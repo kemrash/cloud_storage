@@ -115,7 +115,7 @@ class Db
             $textError = $e->getMessage();
             ErrorApp::writeLog(self::class . ': ' .  $textError);
 
-            throw new Exception($textError);
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -175,14 +175,16 @@ class Db
         } catch (PDOException $e) {
             $errorCode = $e->getCode();
 
-            if ($errorCode !== '23000') {
-                ErrorApp::writeLog(get_class() . ': ' . $e->getMessage());
+            if ($errorCode === '23000') {
+                $error = ErrorApp::showError();
+                $error['code'] = $errorCode;
+
+                return $error;
             }
 
-            $error = ErrorApp::showError();
-            $error['code'] = $errorCode;
+            ErrorApp::writeLog(get_class() . ': ' . $e->getMessage());
 
-            return $error;
+            throw new Exception($e->getMessage());
         }
     }
 

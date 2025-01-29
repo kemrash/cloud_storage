@@ -33,11 +33,14 @@ $urlList = [
     ]
 ];
 
+// try {
 $request = new Request();
 
 Db::getConnection();
 
 new App();
+
+App::getService('session')->startSession();
 
 $router = new Router($urlList);
 $response = $router->processRequest($request);
@@ -55,3 +58,7 @@ if ($response->getType() === 'json') {
 }
 
 echo $response->getData();
+// } catch (Exception $e) {
+//     http_response_code(500);
+//     echo 'Произошла ошибка сервера';
+// }

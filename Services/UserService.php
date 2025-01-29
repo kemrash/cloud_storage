@@ -29,11 +29,8 @@ class UserService
     public function updateUser(array $params, int $id, string $role): Response
     {
         $errors = [];
-        try {
-            $user = App::getService('userRepository')::getUserBy(['id' => (int) $id]);
-        } catch (Exception $e) {
-            return new Response('json', json_encode(ErrorApp::showError('Произошла ошибка сервера')), 500);
-        }
+
+        $user = App::getService('userRepository')::getUserBy(['id' => (int) $id]);
 
         if ($user === null) {
             return new Response('json', json_encode(ErrorApp::showError('Запрошенного пользователя не существует')), 400);
@@ -141,28 +138,18 @@ class UserService
         return new Response('json', json_encode($data));
     }
 
-    public function loginUser(string $email, string $password): array
+    public function loginUser(string $email, string $password): void
     {
         $user = App::getService('userRepository')::getUserBy(['email' => $email]);
-
-        if (is_array($user) && isset($user['status']) && $user['status'] === 'error') {
-            return $user;
-        }
 
         if ($user !== null && password_verify($password, $user->passwordEncrypted)) {
             if (password_needs_rehash($user->passwordEncrypted, PASSWORD_DEFAULT)) {
                 $user->passwordEncrypted = password_hash($password, PASSWORD_DEFAULT);
 
-                $data = App::getService('userRepository')::updateUser($user);
-
-                if ($data['status'] !== 'ok') {
-                    ErrorApp::writeLog((get_class() . ': Произошла ошибка при обновлении хеша пароля.'));
-                }
+                App::getService('userRepository')::updatePasswordById($user->id, $user->passwordEncrypted);
             }
 
             App::setService('user', $user);
         }
-
-        return ['status' => 'ok'];
     }
 }

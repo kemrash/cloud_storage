@@ -38,4 +38,11 @@ class UserRepository extends DB
 
         return parent::updateOneBy(self::DB_NAME, $setParams, ['id' => $user->id], Config::getConfig('database.dbColumns.user'));
     }
+
+    public function updatePasswordById(int $id, string $passwordEncrypted): void
+    {
+        $connection = parent::$connection;
+        $updateUser = $connection->prepare("UPDATE user SET passwordEncrypted = :passwordEncrypted WHERE id = :id");
+        $updateUser->execute(['passwordEncrypted' => $passwordEncrypted, 'id' => $id]);
+    }
 }

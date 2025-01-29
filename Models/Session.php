@@ -3,8 +3,6 @@
 namespace Models;
 
 use Core\App;
-use Core\ErrorApp;
-use Exception;
 
 class Session
 {
@@ -19,29 +17,19 @@ class Session
         session_start();
 
         if (isset($_SESSION['id'])) {
-            try {
-                $user = App::getService('userRepository')::getUserBy(['id' => (int) $_SESSION['id']]);
+            $user = App::getService('userRepository')::getUserBy(['id' => (int) $_SESSION['id']]);
 
-                if ($user !== null) {
-                    $_SESSION['id'] = $user->id;
-                    $_SESSION['role'] = $user->role;
-                } else {
-                    $_SESSION['id'] = '';
-                    $_SESSION['role'] = '';
-                }
-            } catch (Exception $e) {
-                ErrorApp::writeLog(self::class . ': ' . $e->getMessage());
-
-                throw new Exception($e->getMessage());
+            if ($user !== null) {
+                $this->destroySession();
             }
+
+            $_SESSION['id'] = $user->id;
+            $_SESSION['role'] = $user->role;
         }
     }
 
     public function destroySession(): void
     {
-        session_name(self::SESSION_NAME);
-        session_start();
-
         $_SESSION = [];
 
         if (ini_get("session.use_cookies")) {

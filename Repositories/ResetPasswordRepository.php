@@ -2,6 +2,7 @@
 
 namespace Repositories;
 
+use Core\AppException;
 use Core\Config;
 use Core\Db;
 use Core\Helper;
@@ -28,9 +29,7 @@ class ResetPasswordRepository extends Db
         try {
             $statement->execute();
         } catch (Exception $e) {
-            Helper::writeLog(self::class . ': ' . $e->getMessage());
-
-            throw $e;
+            throw new AppException(__CLASS__, $e->getMessage());
         }
     }
 
@@ -53,9 +52,7 @@ class ResetPasswordRepository extends Db
         try {
             $statement->execute();
         } catch (Exception $e) {
-            Helper::writeLog(self::class . ': ' . $e->getMessage());
-
-            throw $e;
+            throw new AppException(__CLASS__, $e->getMessage());
         }
     }
 
@@ -84,9 +81,8 @@ class ResetPasswordRepository extends Db
             return ['status' => 'ok'];
         } catch (Exception $e) {
             $connection->rollBack();
-            Helper::writeLog(self::class . ': ' . $e->getMessage());
 
-            throw $e;
+            throw new AppException(__CLASS__, $e->getMessage());
         }
     }
 }

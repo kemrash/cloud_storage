@@ -2,7 +2,6 @@
 
 namespace Core;
 
-use Exception;
 use PDO;
 use PDOException;
 use Core\Config;
@@ -26,11 +25,7 @@ class Db
 
     public function __wakeup()
     {
-        $textError = "Нельзя восстановить экземпляр";
-
-        Helper::writeLog($textError);
-
-        throw new Exception($textError);
+        throw new AppException(__CLASS__, "Нельзя восстановить экземпляр");
     }
 
     public static function getConnection()
@@ -78,11 +73,7 @@ class Db
     public static function findOneBy(string $dbName, array $params, array $allowedColumns): ?array
     {
         if (!in_array($dbName, self::$allowedDatabases, true)) {
-            $textError = "Недопустимое имя базы данных";
-
-            Helper::writeLog($textError);
-
-            throw new Exception($textError);
+            throw new AppException(__CLASS__, 'Недопустимое имя базы данных');
         }
 
         $conditions = [];
@@ -90,11 +81,7 @@ class Db
 
         foreach ($params as $key => $value) {
             if (!in_array($key, $allowedColumns, true)) {
-                $textError = "Недопустимая колонка: $key";
-
-                Helper::writeLog($textError);
-
-                throw new Exception($textError);
+                throw new AppException(__CLASS__, "Недопустимая колонка: $key");
             }
 
             $conditions[] = "{$key} = :{$key}";
@@ -114,21 +101,14 @@ class Db
 
             return $result ? $result : null;
         } catch (PDOException $e) {
-            $textError = $e->getMessage();
-            Helper::writeLog(self::class . ': ' .  $textError);
-
-            throw new Exception($e->getMessage());
+            throw new AppException(__CLASS__, $e->getMessage());
         }
     }
 
     public static function updateOneBy(string $dbName, array $paramsSet, array $paramsWhere, array $allowedColumns): array
     {
         if (!in_array($dbName, self::$allowedDatabases, true)) {
-            $textError = "Недопустимое имя базы данных";
-
-            Helper::writeLog(get_class() . ': ' . $textError);
-
-            return Helper::showError($textError);
+            throw new AppException(__CLASS__, 'Недопустимое имя базы данных');
         }
 
         $statementSettings = ['settingSet', 'settingWhere'];
@@ -185,9 +165,7 @@ class Db
                 return $error;
             }
 
-            Helper::writeLog(get_class() . ': ' . $e->getMessage());
-
-            throw new Exception($e->getMessage());
+            throw new AppException(__CLASS__, $e->getMessage());
         }
     }
 

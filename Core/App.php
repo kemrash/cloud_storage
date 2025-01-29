@@ -26,7 +26,7 @@ class App
         }
 
         if (!isset(self::$data[$loverFirsLatterServiceName])) {
-            throw new Exception('Не найден сервис или репозиторий');
+            throw new AppException(__CLASS__, 'Не найден сервис или репозиторий');
         }
 
         return self::$data[$loverFirsLatterServiceName];
@@ -35,7 +35,7 @@ class App
     public static function setService(string $name, mixed $service): void
     {
         if (isset(self::$data[$name])) {
-            throw new Exception('Такое название уже зарегистрировано');
+            throw new AppException(__CLASS__, 'Такое название уже зарегистрировано');
         }
 
         self::$data[$name] = $service;

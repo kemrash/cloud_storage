@@ -2,6 +2,7 @@
 
 namespace Models;
 
+use Core\AppException;
 use Core\Helper;
 use Core\Config;
 use Exception;
@@ -36,9 +37,7 @@ class Mail
                 Helper::writeLog(self::class . ': ' . $mail->ErrorInfo);
             }
         } catch (Exception $e) {
-            Helper::writeLog(self::class . ': ' . $e->getMessage());
-
-            throw $e;
+            throw new AppException(__CLASS__, $e->getMessage());
         }
     }
 }

@@ -41,8 +41,6 @@ class UserRepository extends DB
 
     public function updatePasswordById(int $id, string $passwordEncrypted): void
     {
-        $connection = parent::$connection;
-        $updateUser = $connection->prepare("UPDATE " . self::DB_NAME . " SET passwordEncrypted = :passwordEncrypted WHERE id = :id");
-        $updateUser->execute(['passwordEncrypted' => $passwordEncrypted, 'id' => $id]);
+        parent::updateOneBy(self::DB_NAME, ['passwordEncrypted' => $passwordEncrypted], ['id' => $id], Config::getConfig('database.dbColumns.user'));
     }
 }

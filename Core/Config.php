@@ -2,8 +2,6 @@
 
 namespace Core;
 
-use Exception;
-
 class Config
 {
     private static array $config;

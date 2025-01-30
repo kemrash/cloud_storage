@@ -29,6 +29,18 @@ $urlList = [
         'GET' => ['ResetPasswordController', 'preparationResetPassword'],
         'PATCH' => ['ResetPasswordController', 'resetPassword'],
     ],
+    '/admin/users/list' => [
+        'GET' => ['AdminController', 'list'],
+    ],
+    '/admin/users/get/{id}' => [
+        'GET' => ['AdminController', 'get'],
+    ],
+    '/admin/users/delete/{id}' => [
+        'DELETE' => ['AdminController', 'delete'],
+    ],
+    '/admin/users/update/{id}' => [
+        'PUT' => ['AdminController', 'update'],
+    ],
     '/' => [
         'GET' => ['IndexController', 'getIndexHtml'],
     ]

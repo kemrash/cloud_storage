@@ -64,9 +64,7 @@ class Db
 
             return $statement->fetchAll();
         } catch (PDOException $e) {
-            Helper::writeLog($e->getMessage());
-
-            return [];
+            throw new AppException(__CLASS__, $e->getMessage());
         }
     }
 
@@ -76,26 +74,14 @@ class Db
             throw new AppException(__CLASS__, 'Недопустимое имя базы данных');
         }
 
-        $conditions = [];
-        $bindings = [];
+        $data = self::buildWhereClauseAndBindings($params, $allowedColumns);
 
-        foreach ($params as $key => $value) {
-            if (!in_array($key, $allowedColumns, true)) {
-                throw new AppException(__CLASS__, "Недопустимая колонка: $key");
-            }
-
-            $conditions[] = "{$key} = :{$key}";
-            $bindings[$key] = $value;
-        }
-
-        $whereClause = implode(' AND ', $conditions);
-
-        $sql = "SELECT * FROM {$dbName} WHERE {$whereClause} LIMIT 1";
+        $sql = "SELECT * FROM {$dbName} WHERE {$data['whereClause']} LIMIT 1";
 
         $statement = self::$connection->prepare($sql);
 
         try {
-            $statement->execute($bindings);
+            $statement->execute($data['bindings']);
 
             $result = $statement->fetch();
 
@@ -168,6 +154,50 @@ class Db
             throw new AppException(__CLASS__, $e->getMessage());
         }
     }
+
+    public static function deleteOneBy(string $dbName, array $paramsWhere, array $allowedColumns)
+    {
+        if (!in_array($dbName, self::$allowedDatabases, true)) {
+            throw new AppException(__CLASS__, 'Недопустимое имя базы данных');
+        }
+
+        $data = self::buildWhereClauseAndBindings($paramsWhere, $allowedColumns);
+
+        $sql = "DELETE FROM {$dbName} WHERE {$data['whereClause']}";
+
+        $statement = self::$connection->prepare($sql);
+
+        try {
+            $statement->execute($data['bindings']);
+
+            $result = $statement->fetch();
+
+            return $result ? $result : null;
+        } catch (PDOException $e) {
+            throw new AppException(__CLASS__, $e->getMessage());
+        }
+    }
+
+    private static function buildWhereClauseAndBindings(array $params, array $allowedColumns): array
+    {
+        $conditions = [];
+        $bindings = [];
+
+        foreach ($params as $key => $value) {
+            if (!in_array($key, $allowedColumns, true)) {
+                throw new AppException(__CLASS__, "Недопустимая колонка: $key");
+            }
+
+            $conditions[] = "{$key} = :{$key}";
+            $bindings[$key] = $value;
+        }
+
+        $whereClause = implode(' AND ', $conditions);
+
+        return ['whereClause' => $whereClause, 'bindings' => $bindings];
+    }
+
+    // self::$connection->prepare("DELETE FROM " . $dbName . " WHERE userId = :userId");
 
     // public static function findAll() {}
 

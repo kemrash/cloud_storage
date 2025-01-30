@@ -23,13 +23,11 @@ class UserController
     {
         $data = App::getService('userService')->getUserById($params[0]);
 
-        if ($data !== null) {
-            $response = new JSONResponse($data);
-        } else {
-            $response = new Response('html', 'Страница не найдена', 404);
+        if ($data === null) {
+            return new Response('html', 'Страница не найдена', 404);
         }
 
-        return $response;
+        return new JSONResponse($data);
     }
 
     public function update(Request $request): Response

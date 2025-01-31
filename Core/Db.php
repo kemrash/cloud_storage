@@ -102,7 +102,7 @@ class Db
         $preBinding = implode(', ', $conditions);
         $dbColumns = implode(', ', $allowedColumns);
 
-        $sql = "INSERT INTO " . $dbName . " ({$dbColumns}) VALUES ({$preBinding})";
+        $sql = "INSERT INTO {$dbName} ({$dbColumns}) VALUES ({$preBinding})";
 
         $statement = self::$connection->prepare($sql);
         $statement->execute($bindings);

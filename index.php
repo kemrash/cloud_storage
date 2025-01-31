@@ -33,6 +33,9 @@ $urlList = [
     '/admin/users/list' => [
         'GET' => ['AdminController', 'list'],
     ],
+    '/admin/users/create' => [
+        'POST' => ['AdminController', 'create'],
+    ],
     '/admin/users/get/{id}' => [
         'GET' => ['AdminController', 'get'],
     ],

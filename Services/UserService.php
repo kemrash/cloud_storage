@@ -85,7 +85,6 @@ class UserService
                     break;
 
                 case 'age':
-
                     if (!isset($params['age']) || $params['age'] === null) {
                         $user->age = null;
                         break;

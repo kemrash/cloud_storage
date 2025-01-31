@@ -15,7 +15,7 @@ class User
     private ?int $age;
     private ?string $gender;
 
-    public function __construct(int $id, string $email, string $passwordEncrypted, string $role, int $age = null, string $gender = null)
+    public function __construct(int $id, string $email, string $passwordEncrypted, string $role = 'user', int $age = null, string $gender = null)
     {
         $this->__set('id', $id);
         $this->__set('email', $email);
@@ -45,12 +45,12 @@ class User
         return in_array($role, self::ALLOWED_ROLE, true);
     }
 
-    public static function isValidAge(int|null $age): bool
+    public static function isValidAge(int|null $age): ?bool
     {
         return is_int($age) && $age >= 0 || $age === null;
     }
 
-    public static function isValidGender(string|null $gender): bool
+    public static function isValidGender(string|null $gender): ?bool
     {
         return in_array($gender, ['male', 'female'], true) || $gender === null;
     }

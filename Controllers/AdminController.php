@@ -14,6 +14,15 @@ class AdminController
         return !$this->isAdmin() ? $this->accessForbidden() : new JSONResponse(App::getService('adminService')->getUsersList());
     }
 
+    public function create(Request $request): Response
+    {
+        if (!$this->isAdmin()) {
+            return  $this->accessForbidden();
+        }
+
+        return App::getService('adminService')->createUser($request->getData()['POST']);
+    }
+
     public function get(array $params): Response
     {
         if (!$this->isAdmin()) {

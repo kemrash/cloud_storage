@@ -39,18 +39,12 @@ class Db
 
     public static function findBy(string $dbName, array $columns, array $allowedColumns): array
     {
-        if (!in_array($dbName, self::$allowedDatabases, true)) {
-            Helper::writeLog("Недопустимое имя базы данных");
-
-            return [];
-        }
+        self::validateDatabaseName($dbName);
 
         $safeColumns = array_intersect($allowedColumns, $columns);
 
         if (empty($safeColumns)) {
-            Helper::writeLog("Нет допустимых столбцов для выбора.");
-
-            return [];
+            throw new AppException(__CLASS__, "Нет допустимых столбцов для выбора.");
         }
 
         $columnList = implode(', ', array_map(fn($col) => "`$col`", $safeColumns));
@@ -70,9 +64,7 @@ class Db
 
     public static function findOneBy(string $dbName, array $params, array $allowedColumns): ?array
     {
-        if (!in_array($dbName, self::$allowedDatabases, true)) {
-            throw new AppException(__CLASS__, 'Недопустимое имя базы данных');
-        }
+        self::validateDatabaseName($dbName);
 
         $data = self::buildWhereClauseAndBindings($params, $allowedColumns);
 
@@ -91,11 +83,34 @@ class Db
         }
     }
 
+    public static function insert(string $dbName, array $params, array $allowedColumns): void
+    {
+        self::validateDatabaseName($dbName);
+
+        $conditions = [];
+        $bindings = [];
+
+        foreach ($allowedColumns as $allowedColumn) {
+            if (!isset($params[$allowedColumn])) {
+                $conditions[] = "null";
+            } else {
+                $conditions[] = ":{$allowedColumn}";
+                $bindings[$allowedColumn] = $params[$allowedColumn];
+            }
+        }
+
+        $preBinding = implode(', ', $conditions);
+        $dbColumns = implode(', ', $allowedColumns);
+
+        $sql = "INSERT INTO " . $dbName . " ({$dbColumns}) VALUES ({$preBinding})";
+
+        $statement = self::$connection->prepare($sql);
+        $statement->execute($bindings);
+    }
+
     public static function updateOneBy(string $dbName, array $paramsSet, array $paramsWhere, array $allowedColumns): array
     {
-        if (!in_array($dbName, self::$allowedDatabases, true)) {
-            throw new AppException(__CLASS__, 'Недопустимое имя базы данных');
-        }
+        self::validateDatabaseName($dbName);
 
         $statementSettings = ['settingSet', 'settingWhere'];
 
@@ -157,9 +172,7 @@ class Db
 
     public static function deleteOneBy(string $dbName, array $paramsWhere, array $allowedColumns)
     {
-        if (!in_array($dbName, self::$allowedDatabases, true)) {
-            throw new AppException(__CLASS__, 'Недопустимое имя базы данных');
-        }
+        self::validateDatabaseName($dbName);
 
         $data = self::buildWhereClauseAndBindings($paramsWhere, $allowedColumns);
 
@@ -178,7 +191,7 @@ class Db
         }
     }
 
-    private static function buildWhereClauseAndBindings(array $params, array $allowedColumns): array
+    private static function buildWhereClauseAndBindings(array $params, array $allowedColumns, string $separator = ' AND '): array
     {
         $conditions = [];
         $bindings = [];
@@ -192,9 +205,16 @@ class Db
             $bindings[$key] = $value;
         }
 
-        $whereClause = implode(' AND ', $conditions);
+        $whereClause = implode($separator, $conditions);
 
         return ['whereClause' => $whereClause, 'bindings' => $bindings];
+    }
+
+    private static function validateDatabaseName(string $dbName): void
+    {
+        if (!in_array($dbName, self::$allowedDatabases, true)) {
+            throw new AppException(__CLASS__, 'Недопустимое имя базы данных');
+        }
     }
 
     // self::$connection->prepare("DELETE FROM " . $dbName . " WHERE userId = :userId");

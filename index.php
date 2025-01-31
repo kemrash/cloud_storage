@@ -1,6 +1,7 @@
 <?php
 
 use Core\App;
+use Core\AppException;
 use Core\Db;
 use Core\Helper;
 use Core\Request;
@@ -71,8 +72,8 @@ try {
     }
 
     echo $response->getData();
-} catch (Exception $e) {
-    Helper::writeLog('index.php' . ': ' .  $e->getMessage());
+} catch (AppException $e) {
+    $e->log();
     http_response_code(500);
     echo 'Произошла ошибка сервера';
 }

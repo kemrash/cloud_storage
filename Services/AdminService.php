@@ -110,8 +110,14 @@ class AdminService
         return ['id' => $user->id, 'email' => $user->email, 'role' => $user->role, 'age' => $user->age, 'gender' => $user->gender];
     }
 
-    public function deleteUserById(string $id): void
+    public function deleteUserById(string $id): Response
     {
+        if ((int) $id === Config::getConfig('app.idUserSystem')) {
+            return new JSONResponse(Helper::showError('Нельзя удалять системного пользователя'));
+        }
+
         App::getService('adminRepository')::deleteUserBy(['id' => $id]);
+
+        return new JSONResponse();
     }
 }

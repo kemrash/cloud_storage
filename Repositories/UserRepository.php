@@ -12,14 +12,22 @@ class UserRepository extends DB
 
     public static function findUsersBy(...$columns): array
     {
-        return parent::findBy(self::DB_NAME, $columns, Config::getConfig('database.dbColumns.user'));
+        $data = parent::findBy(self::DB_NAME, $columns, Config::getConfig('database.dbColumns.user'));
+        $userSystem = Config::getConfig('app.idUserSystem');
+
+        if (isset($data[$userSystem])) {
+            unset($data[$userSystem]);
+            $data = array_values($data);
+        }
+
+        return $data;
     }
 
     public static function getUserBy(array $params): ?User
     {
         $data = parent::findOneBy(self::DB_NAME, $params, Config::getConfig('database.dbColumns.user'));
 
-        if ($data === null) {
+        if ($data === null || $data['id'] === Config::getConfig('app.idUserSystem')) {
             return null;
         }
 

@@ -5,3 +5,10 @@ RewriteRule ^(.*)$ /index.php [QSA,L]
 <Files "config.php">
     Require all denied
 </Files>
+
+LimitRequestBody 2147483648
+
+php_value upload_max_filesize 2G
+php_value post_max_size 2G
+php_value max_execution_time 44743
+php_value default_socket_timeout 44743

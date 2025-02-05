@@ -44,9 +44,7 @@ class AdminController
             return  $this->accessForbidden();
         }
 
-        App::getService('adminService')->deleteUserById($params[0]);
-
-        return new JSONResponse();
+        return App::getService('adminService')->deleteUserById($params[0]);
     }
 
     public function update(array $params, Request $request): Response

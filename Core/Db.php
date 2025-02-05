@@ -10,7 +10,7 @@ class Db
 {
     private static array $allowedDatabases;
     private static ?Db $instance = null;
-    protected static PDO $connection;
+    public static PDO $connection;
 
     private function __construct()
     {
@@ -83,7 +83,7 @@ class Db
         }
     }
 
-    public static function insert(string $dbName, array $params, array $allowedColumns): void
+    public static function insert(string $dbName, array $params, array $allowedColumns): string
     {
         self::validateDatabaseName($dbName);
 
@@ -106,6 +106,10 @@ class Db
 
         $statement = self::$connection->prepare($sql);
         $statement->execute($bindings);
+
+        $id = self::$connection->lastInsertId();
+
+        return $id;
     }
 
     public static function updateOneBy(string $dbName, array $paramsSet, array $paramsWhere, array $allowedColumns): array
@@ -170,7 +174,7 @@ class Db
         }
     }
 
-    public static function deleteOneBy(string $dbName, array $paramsWhere, array $allowedColumns)
+    public static function deleteOneBy(string $dbName, array $paramsWhere, array $allowedColumns): void
     {
         self::validateDatabaseName($dbName);
 
@@ -182,10 +186,6 @@ class Db
 
         try {
             $statement->execute($data['bindings']);
-
-            $result = $statement->fetch();
-
-            return $result ? $result : null;
         } catch (PDOException $e) {
             throw new AppException(__CLASS__, $e->getMessage());
         }

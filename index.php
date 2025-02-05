@@ -3,7 +3,6 @@
 use Core\App;
 use Core\AppException;
 use Core\Db;
-use Core\Helper;
 use Core\Request;
 use Core\Response;
 use Core\Router;
@@ -44,6 +43,9 @@ $urlList = [
     ],
     '/admin/users/update/{id}' => [
         'PUT' => ['AdminController', 'update'],
+    ],
+    '/files/add' => [
+        'POST' => ['FilesController', 'add'],
     ],
     '/' => [
         'GET' => ['IndexController', 'getIndexHtml'],

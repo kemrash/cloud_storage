@@ -7,15 +7,20 @@ use Core\Db;
 
 class AdminRepository  extends Db
 {
-    private const DB_NAME = 'user';
-
     public static function createUser(array $params): void
     {
-        parent::insert(self::DB_NAME, $params, Config::getConfig('database.dbColumns.user'));
+        $id = parent::insert('user', $params, Config::getConfig('database.dbColumns.user'));
+        $folder = [
+            'userId' => (int) $id,
+            'parentId' => Config::getConfig('app.idUserSystem'),
+            'name' => 'home',
+        ];
+
+        parent::insert('folder', $folder, Config::getConfig('database.dbColumns.folder'));
     }
 
     public static function deleteUserBy(array $params): void
     {
-        parent::deleteOneBy(self::DB_NAME, $params, Config::getConfig('database.dbColumns.user'));
+        parent::deleteOneBy('user', $params, Config::getConfig('database.dbColumns.user'));
     }
 }

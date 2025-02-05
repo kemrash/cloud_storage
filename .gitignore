@@ -2,4 +2,5 @@
 error.log
 Templates/*
 Vendor
+Storage/*
 /config.php

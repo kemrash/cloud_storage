@@ -12,6 +12,6 @@ class IndexController
             return new Response('html', file_get_contents('./Templates/index.html'));
         }
 
-        return new Response('html', file_get_contents('./Templates/form.html'));
+        return new Response('html', file_get_contents('./Templates/file.html'));
     }
 }

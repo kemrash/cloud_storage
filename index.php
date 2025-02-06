@@ -49,7 +49,7 @@ $urlList = [
     ],
     '/' => [
         'GET' => ['IndexController', 'getIndexHtml'],
-    ]
+    ],
 ];
 
 try {

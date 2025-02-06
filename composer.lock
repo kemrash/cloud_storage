@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fa1f826d00a5f086073edac8f937c2ad",
+    "content-hash": "cb55d94c6cd8af29fc511f9c57634cbb",
     "packages": [
         {
             "name": "brick/math",
@@ -65,6 +65,67 @@
                 }
             ],
             "time": "2023-11-29T23:19:16+00:00"
+        },
+        {
+            "name": "flowjs/flow-php-server",
+            "version": "v2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/flowjs/flow-php-server.git",
+                "reference": "24ba9aca022410095f781532b38a8e52adc1b22e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/flowjs/flow-php-server/zipball/24ba9aca022410095f781532b38a8e52adc1b22e",
+                "reference": "24ba9aca022410095f781532b38a8e52adc1b22e",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0"
+            },
+            "require-dev": {
+                "ext-mongodb": "*",
+                "friendsofphp/php-cs-fixer": "^3.65",
+                "mikey179/vfsstream": "^1.2",
+                "mongodb/mongodb": "^1.4.0",
+                "phpstan/phpstan": "^2.0",
+                "phpunit/phpunit": ">=9.0"
+            },
+            "suggest": {
+                "mongodb/mongodb": "Required to use this package with Mongo DB"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Flow": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Aidas Klimas",
+                    "email": "aidaskk@gmail.com"
+                }
+            ],
+            "description": "PHP library for handling chunk uploads. Works with flow.js html5 file uploads.",
+            "keywords": [
+                "chunks",
+                "file upload",
+                "flow",
+                "flow.js",
+                "html5 file upload",
+                "resumable",
+                "resumable.js",
+                "upload"
+            ],
+            "support": {
+                "issues": "https://github.com/flowjs/flow-php-server/issues",
+                "source": "https://github.com/flowjs/flow-php-server/tree/v2.0.0"
+            },
+            "time": "2024-12-09T12:14:15+00:00"
         },
         {
             "name": "phpmailer/phpmailer",

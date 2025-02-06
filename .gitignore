@@ -3,4 +3,5 @@ error.log
 Templates/*
 Vendor
 Storage/*
+Chunks_temp_folder/*
 /config.php

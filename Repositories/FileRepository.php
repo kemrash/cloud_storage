@@ -4,6 +4,7 @@ namespace Repositories;
 
 use Core\Config;
 use Core\Db;
+use Models\File;
 use Models\Folder;
 
 class FileRepository extends Db
@@ -19,15 +20,15 @@ class FileRepository extends Db
         return new Folder((int) $data['id'], (int) $data['userId'], (int) $data['parentId'], $data['name']);
     }
 
-    public static function addFile(int $userId, int $folderId, string $name, array $file): string
+    public static function addFile(File $file): string
     {
         $addFile = [
-            'userId' => $userId,
-            'folderId' => $folderId,
-            'serverName' => $name,
-            'origenName' => $file['name'],
-            'mimeType' => $file['type'],
-            'size' => $file['size'],
+            'userId' => $file->userId,
+            'folderId' => $file->folderId,
+            'serverName' => $file->serverName,
+            'origenName' => $file->origenName,
+            'mimeType' => $file->mimeType,
+            'size' => $file->size,
         ];
 
         return Db::insert('file', $addFile, Config::getConfig('database.dbColumns.file'));

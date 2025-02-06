@@ -7,6 +7,7 @@ use Core\AppException;
 use Core\Config;
 use Core\Db;
 use Core\Helper;
+use Core\Response;
 use Core\Response\JSONResponse;
 use Exception;
 use PDOException;
@@ -19,7 +20,7 @@ use Models\File;
 
 class FileService
 {
-    public function addFileChunks(int $userId, int $folderId, FlowRequest $request)
+    public function addFileChunks(int $userId, int $folderId, FlowRequest $request): Response
     {
         try {
             $folder = App::getService('fileRepository')::findOneFolderById($folderId);

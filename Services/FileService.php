@@ -14,7 +14,7 @@ use PDOException;
 use Ramsey\Uuid\Uuid;
 use Flow\Config as FlowConfig;
 use Flow\Request as FlowRequest;
-use Flow\Basic as FlowBasic;
+use Flow\Basic;
 use Flow\Uploader;
 use Models\File;
 
@@ -50,7 +50,7 @@ class FileService
             $uploadFileName = uniqid('', true) . "_" . Uuid::uuid4()->toString();
             $uploadPath = $uploadFolder . $uploadFileName;
 
-            if (FlowBasic::save($uploadPath, $config, $request)) {
+            if (Basic::save($uploadPath, $config, $request)) {
                 $connection = Db::$connection;
                 $connection->beginTransaction();
 
@@ -68,8 +68,12 @@ class FileService
 
                 $maxAttempts = 2;
                 $origenFileName = $request->getFileName();
-                $fileMimeType = $request->getFile()['type'];
-                $fileSize = $request->getFile()['size'];
+                $fileSize = filesize($uploadPath);
+                $fileMimeType = mime_content_type($uploadPath);
+
+                if ($fileMimeType === false) {
+                    $fileMimeType = '';
+                }
 
                 for ($i = 0; $i <= $maxAttempts; $i++) {
 
@@ -108,12 +112,12 @@ class FileService
                     'message' => 'Файл успешно загружен',
                     'path' => $uploadPath
                 ]);
-            } else {
-                return new JSONResponse([
-                    'status' => 'continue',
-                    'message' => 'Чанк получен, продолжается загрузка'
-                ]);
             }
+
+            return new JSONResponse([
+                'status' => 'continue',
+                'message' => 'Чанк получен, продолжается загрузка'
+            ]);
         } catch (Exception $e) {
             if (isset($uploadFileName) && file_exists($uploadFolder . $uploadFileName)) {
                 try {

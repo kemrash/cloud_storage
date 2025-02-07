@@ -20,6 +20,31 @@ use Models\File;
 
 class FileService
 {
+    public function getFilesList(int $id): Response
+    {
+        $data = App::getService('fileRepository')::getFilesList($id);
+
+        return new JSONResponse($data);
+    }
+
+    public function getUserFile(int $fileId): Response
+    {
+        $file = App::getService('fileRepository')::getFileById($fileId);
+
+        if ($file === null) {
+            return new Response('html', 'Страница не найдена', 404);
+        }
+
+        return new JSONResponse([
+            'id' => $file->id,
+            'userId' => $file->userId,
+            'folderId' => $file->folderId,
+            'origenName' => $file->origenName,
+            'mimeType' => $file->mimeType,
+            'size' => $file->size,
+        ]);
+    }
+
     public function addFileChunks(int $userId, int $folderId, FlowRequest $request): Response
     {
         try {
@@ -125,6 +150,44 @@ class FileService
                 } catch (Exception $e) {
                     throw new AppException(__CLASS__, $e->getMessage());
                 }
+            }
+
+            throw new AppException(__CLASS__, $e->getMessage());
+        }
+    }
+
+    public function renameUserFile(int $userId, int $fileId, string $name): Response
+    {
+        return $this->processUserFileWithTransaction($userId, $fileId, 'fileRepository', 'renameFile', [$fileId, $name]);
+    }
+
+    public function deleteUserFile(int $userId, int $fileId): Response
+    {
+        return $this->processUserFileWithTransaction($userId, $fileId, 'fileRepository', 'deleteFile', [$fileId]);
+    }
+
+    private function processUserFileWithTransaction(int $userId, int $fileId, string $serviceName, string $method, array $params): Response
+    {
+        $connection = Db::$connection;
+        $connection->beginTransaction();
+
+        try {
+            $file = App::getService('fileRepository')::getFileById($fileId);
+
+            if ($file === null || $file->userId !== $userId) {
+                $connection->rollBack();
+
+                return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+            }
+
+            call_user_func_array([App::getService($serviceName), $method], $params);
+
+            $connection->commit();
+
+            return new JSONResponse();
+        } catch (Exception $e) {
+            if ($connection->inTransaction()) {
+                $connection->rollBack();
             }
 
             throw new AppException(__CLASS__, $e->getMessage());

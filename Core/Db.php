@@ -17,7 +17,9 @@ class Db
         $dbConnection = Config::getConfig('database');
         $textConnection = 'mysql:host=' . $dbConnection['host'] . ';dbname=' . $dbConnection['name'] . ';charset=' . $dbConnection['charset'];
 
-        self::$connection = new PDO($textConnection, $dbConnection['user'], $dbConnection['password']);
+        self::$connection = new PDO($textConnection, $dbConnection['user'], $dbConnection['password'], [
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        ]);
         self::$allowedDatabases = Config::getConfig('database.dbNames');
     }
 
@@ -37,7 +39,7 @@ class Db
         return self::$instance;
     }
 
-    public static function findBy(string $dbName, array $columns, array $allowedColumns): array
+    public static function findBy(string $dbName, array $columns, array $allowedColumns, array $where = []): array
     {
         self::validateDatabaseName($dbName);
 
@@ -49,12 +51,22 @@ class Db
 
         $columnList = implode(', ', array_map(fn($col) => "`$col`", $safeColumns));
 
-        $sql = "SELECT {$columnList} FROM {$dbName}";
+        if (count($where) === 0) {
+            $sql = "SELECT {$columnList} FROM {$dbName}";
+        } else {
+            $data = self::buildWhereClauseAndBindings($where, $allowedColumns);
+
+            $sql = "SELECT {$columnList} FROM {$dbName} WHERE {$data['whereClause']}";
+        }
 
         $statement = self::$connection->prepare($sql);
 
         try {
-            $statement->execute();
+            if (count($where) === 0) {
+                $statement->execute();
+            } else {
+                $statement->execute($data['bindings']);
+            }
 
             return $statement->fetchAll();
         } catch (PDOException $e) {

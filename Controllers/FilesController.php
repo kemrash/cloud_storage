@@ -12,6 +12,30 @@ use Flow\Request as FlowRequest;
 
 class FilesController
 {
+    public function list(): Response
+    {
+        if (!isset($_SESSION['id'])) {
+            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+        }
+
+        return App::getService('fileService')->getFilesList((int) $_SESSION['id']);
+    }
+
+    public function getFile(array $params): Response
+    {
+        if (!isset($_SESSION['id'])) {
+            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+        }
+
+        if (!isset($params[0]) || !ctype_digit($params[0])) {
+            return new Response('html', 'Страница не найдена', 404);
+        }
+
+        $fileId = (int) $params[0];
+
+        return App::getService('fileService')->getUserFile($fileId);
+    }
+
     public function add(Request $request): Response
     {
         if (!isset($_SESSION['id'])) {
@@ -53,5 +77,51 @@ class FilesController
         }
 
         return App::getService('fileService')->addFileChunks((int) $userId, (int) $folderId, $flowRequest);
+    }
+
+    public function renameFile(Request $request): Response
+    {
+        if (!isset($_SESSION['id'])) {
+            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+        }
+
+        $userId = (int) $_SESSION['id'];
+
+        $data = $request->getData();
+
+        if (
+            !isset($data['PUT']['id']) ||
+            !ctype_digit($data['PUT']['id']) ||
+            !isset($data['PUT']['fileName']) ||
+            !is_string($data['PUT']['fileName'])
+        ) {
+            return new JSONResponse(Helper::showError('Некорректные данные'), 400);
+        }
+
+        $fileId = (int) $data['PUT']['id'];
+        $fileName = $data['PUT']['fileName'];
+
+        if (mb_strlen($fileName) > 255) {
+            return new JSONResponse(Helper::showError('Название файла, вместе с расширением, не должно превышать 255 символов'), 400);
+        }
+
+        return App::getService('fileService')->renameUserFile($userId, $fileId, $fileName);
+    }
+
+    public function removeFile(array $params): Response
+    {
+        if (!isset($_SESSION['id'])) {
+            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+        }
+
+        $userId = (int) $_SESSION['id'];
+
+        if (!isset($params[0]) || !ctype_digit($params[0])) {
+            return new Response('html', 'Страница не найдена', 404);
+        }
+
+        $fileId = (int) $params[0];
+
+        return App::getService('fileService')->deleteUserFile($userId, $fileId);
     }
 }

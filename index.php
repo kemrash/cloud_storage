@@ -44,8 +44,20 @@ $urlList = [
     '/admin/users/update/{id}' => [
         'PUT' => ['AdminController', 'update'],
     ],
+    '/files/list' => [
+        'GET' => ['FilesController', 'list'],
+    ],
+    '/files/get/{id}' => [
+        'GET' => ['FilesController', 'getFile'],
+    ],
     '/files/add' => [
         'POST' => ['FilesController', 'add'],
+    ],
+    '/files/rename' => [
+        'PATCH' => ['FilesController', 'renameFile'],
+    ],
+    '/files/remove/{id}' => [
+        'DELETE' => ['FilesController', 'removeFile'],
     ],
     '/' => [
         'GET' => ['IndexController', 'getIndexHtml'],

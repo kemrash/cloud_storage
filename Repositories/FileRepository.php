@@ -11,7 +11,7 @@ class FileRepository extends Db
 {
     public static function getFilesList(int $userId): array
     {
-        $data = Db::findBy('file', ['id', 'folderId', 'origenName', 'mimeType', 'size'],  Config::getConfig('database.dbColumns.file'), ['userId' => $userId]);
+        $data = Db::findBy('file', ['id', 'folderId', 'serverName', 'origenName', 'mimeType', 'size'],  Config::getConfig('database.dbColumns.file'), ['userId' => $userId]);
 
         return $data === null ? [] : $data;
     }

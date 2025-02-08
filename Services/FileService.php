@@ -38,6 +38,7 @@ class FileService
         return new JSONResponse([
             'id' => $file->id,
             'userId' => $file->userId,
+            'serverName' => $file->serverName,
             'folderId' => $file->folderId,
             'origenName' => $file->origenName,
             'mimeType' => $file->mimeType,
@@ -130,7 +131,7 @@ class FileService
                     }
                 }
 
-                $this->randomClearFolder($chunksTempFolder);
+                $this->randomClearFolderChunks($chunksTempFolder);
 
                 return new JSONResponse([
                     'status' => 'success',
@@ -194,7 +195,7 @@ class FileService
         }
     }
 
-    private function randomClearFolder(string $folder): void
+    private function randomClearFolderChunks(string $folder): void
     {
         if (1 == mt_rand(1, 100)) {
             Uploader::pruneChunks($folder);

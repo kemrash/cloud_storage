@@ -23,7 +23,7 @@ class FolderService
         $folder = new Folder($userId, $parentId, $name);
 
         try {
-            $folderId =  App::getService('folderRepository')::addFolder($folder);
+            $folderId = App::getService('folderRepository')::addFolder($folder);
 
             return new JSONResponse([
                 'status' => 'ok',
@@ -42,5 +42,28 @@ class FolderService
 
             throw new AppException(__CLASS__, $e->getMessage());
         }
+    }
+
+    public function renameUserFolder(int $userId, int $id, string $name): Response
+    {
+        $data = App::getService('folderRepository')::renameFolder($userId, $id, $name);
+
+        return isset($data['code']) && $data['code'] === 404 ? new Response('html', 'Страница не найдена', 404) : new JSONResponse($data);
+    }
+
+    public function getUserFolder(int $userId, int $folderId): Response
+    {
+        $folder = App::getService('folderRepository')::getFolderBy($userId, $folderId);
+
+        if ($folder === null) {
+            return new Response('html', 'Страница не найдена', 404);
+        }
+
+        return new JSONResponse([
+            'id' => $folder->id,
+            'userId' => $folder->userId,
+            'parentId' => $folder->parentId,
+            'name' => $folder->name
+        ]);
     }
 }

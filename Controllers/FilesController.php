@@ -9,13 +9,16 @@ use Core\Request;
 use Core\Response;
 use Core\Response\JSONResponse;
 use Flow\Request as FlowRequest;
+use Traits\UserTrait;
 
 class FilesController
 {
+    use UserTrait;
+
     public function list(): Response
     {
-        if (!isset($_SESSION['id'])) {
-            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+        if ($response = $this->checkUserAuthorization()) {
+            return $response;
         }
 
         return App::getService('fileService')->getFilesList((int) $_SESSION['id']);
@@ -23,8 +26,8 @@ class FilesController
 
     public function getFile(array $params): Response
     {
-        if (!isset($_SESSION['id'])) {
-            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+        if ($response = $this->checkUserAuthorization()) {
+            return $response;
         }
 
         if (!isset($params[0]) || !ctype_digit($params[0])) {
@@ -38,8 +41,8 @@ class FilesController
 
     public function add(Request $request): Response
     {
-        if (!isset($_SESSION['id'])) {
-            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+        if ($response = $this->checkUserAuthorization()) {
+            return $response;
         }
 
         $userId = $_SESSION['id'];
@@ -81,8 +84,8 @@ class FilesController
 
     public function rename(Request $request): Response
     {
-        if (!isset($_SESSION['id'])) {
-            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+        if ($response = $this->checkUserAuthorization()) {
+            return $response;
         }
 
         $userId = (int) $_SESSION['id'];
@@ -110,8 +113,8 @@ class FilesController
 
     public function remove(array $params): Response
     {
-        if (!isset($_SESSION['id'])) {
-            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+        if ($response = $this->checkUserAuthorization()) {
+            return $response;
         }
 
         $userId = (int) $_SESSION['id'];

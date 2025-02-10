@@ -62,6 +62,12 @@ $urlList = [
     '/directories/add' => [
         'POST' => ['FolderController', 'add'],
     ],
+    '/directories/rename' => [
+        'PATCH' => ['FolderController', 'rename'],
+    ],
+    '/directories/get/{id}' => [
+        'GET' => ['FolderController', 'get'],
+    ],
     '/' => [
         'GET' => ['IndexController', 'getIndexHtml'],
     ],

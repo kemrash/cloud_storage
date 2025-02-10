@@ -79,7 +79,7 @@ class FilesController
         return App::getService('fileService')->addFileChunks((int) $userId, (int) $folderId, $flowRequest);
     }
 
-    public function renameFile(Request $request): Response
+    public function rename(Request $request): Response
     {
         if (!isset($_SESSION['id'])) {
             return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
@@ -108,7 +108,7 @@ class FilesController
         return App::getService('fileService')->renameUserFile($userId, $fileId, $fileName);
     }
 
-    public function removeFile(array $params): Response
+    public function remove(array $params): Response
     {
         if (!isset($_SESSION['id'])) {
             return new JSONResponse(Helper::showError('Доступ запрещен'), 403);

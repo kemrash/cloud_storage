@@ -5,6 +5,7 @@ namespace Services;
 use Core\App;
 use Core\AppException;
 use Core\Config;
+use Core\Db;
 use Core\Helper;
 use Core\Response;
 use Core\Response\JSONResponse;
@@ -87,8 +88,14 @@ class AdminService
         }
 
         try {
-            App::getService('adminRepository')::createUser($allowedParams);
+            $data =  App::getService('adminRepository')::createUser($allowedParams);
         } catch (PDOException $e) {
+            $connection = Db::$connection;
+
+            if ($connection->inTransaction()) {
+                $connection->rollBack();
+            }
+
             if ($e->getCode() === '23000') {
                 return new JSONResponse(Helper::showError('Пользователь с таким email уже существует'));
             }
@@ -96,7 +103,7 @@ class AdminService
             throw new AppException(__CLASS__, $e->getMessage());
         }
 
-        return new JSONResponse();
+        return new JSONResponse($data);
     }
 
     public function getUserById(string $id): ?array

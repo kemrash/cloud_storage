@@ -49,7 +49,7 @@ class FileService
     public function addFileChunks(int $userId, int $folderId, FlowRequest $request): Response
     {
         try {
-            $folder = App::getService('fileRepository')::findOneFolderById($folderId);
+            $folder = App::getService('folderRepository')::findOneFolderById($folderId);
 
             if ($folder === null || $folder->userId !== $userId) {
 
@@ -80,7 +80,7 @@ class FileService
                 $connection = Db::$connection;
                 $connection->beginTransaction();
 
-                $folder = App::getService('fileRepository')::findOneFolderById($folderId);
+                $folder = App::getService('folderRepository')::findOneFolderById($folderId);
 
                 if ($folder === null || $folder->userId !== $userId) {
                     $connection->rollBack();

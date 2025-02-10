@@ -50,15 +50,4 @@ class FileRepository extends Db
     {
         parent::deleteOneBy('file', ['id' => $id], Config::getConfig('database.dbColumns.user'));
     }
-
-    public static function findOneFolderById(int $id): ?Folder
-    {
-        $data =  Db::findOneBy('folder', ['id' => $id], Config::getConfig('database.dbColumns.folder'));
-
-        if ($data === null) {
-            return null;
-        }
-
-        return new Folder((int) $data['id'], (int) $data['userId'], (int) $data['parentId'], $data['name']);
-    }
 }

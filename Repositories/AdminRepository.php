@@ -2,21 +2,30 @@
 
 namespace Repositories;
 
+use Core\App;
 use Core\Config;
 use Core\Db;
+use Models\Folder;
 
 class AdminRepository  extends Db
 {
-    public static function createUser(array $params): void
+    public static function createUser(array $params): array
     {
-        $id = parent::insert('user', $params, Config::getConfig('database.dbColumns.user'));
-        $folder = [
-            'userId' => (int) $id,
-            'parentId' => Config::getConfig('app.idUserSystem'),
-            'name' => 'home',
-        ];
+        $connection = Db::$connection;
+        $connection->beginTransaction();
 
-        parent::insert('folder', $folder, Config::getConfig('database.dbColumns.folder'));
+        $id = parent::insert('user', $params, Config::getConfig('database.dbColumns.user'));
+        $folder = new Folder((int) $id, Config::getConfig('app.idUserSystem'), 'home');
+
+        $folderId = App::getService('folderRepository')::addFolder($folder);
+
+        $connection->commit();
+
+        return [
+            'status' => 'ok',
+            'id' => $id,
+            'folderId' => $folderId,
+        ];
     }
 
     public static function deleteUserBy(array $params): void

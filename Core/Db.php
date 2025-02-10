@@ -228,10 +228,4 @@ class Db
             throw new AppException(__CLASS__, 'Недопустимое имя базы данных');
         }
     }
-
-    // self::$connection->prepare("DELETE FROM " . $dbName . " WHERE userId = :userId");
-
-    // public static function findAll() {}
-
-    // public static function find() {}
 }

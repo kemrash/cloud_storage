@@ -54,10 +54,13 @@ $urlList = [
         'POST' => ['FilesController', 'add'],
     ],
     '/files/rename' => [
-        'PATCH' => ['FilesController', 'renameFile'],
+        'PATCH' => ['FilesController', 'rename'],
     ],
     '/files/remove/{id}' => [
-        'DELETE' => ['FilesController', 'removeFile'],
+        'DELETE' => ['FilesController', 'remove'],
+    ],
+    '/directories/add' => [
+        'POST' => ['FolderController', 'add'],
     ],
     '/' => [
         'GET' => ['IndexController', 'getIndexHtml'],

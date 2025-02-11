@@ -9,9 +9,26 @@ use Models\Folder;
 
 class FileRepository extends Db
 {
-    public static function getFilesList(int $userId): array
+    public static function getFilesListUser(int $userId): array
     {
-        $data = Db::findBy('file', ['id', 'folderId', 'serverName', 'origenName', 'mimeType', 'size'],  Config::getConfig('database.dbColumns.file'), ['userId' => $userId]);
+        $data = Db::findBy(
+            'file',
+            ['id', 'folderId', 'serverName', 'origenName', 'mimeType', 'size'],
+            Config::getConfig('database.dbColumns.file'),
+            ['userId' => $userId]
+        );
+
+        return $data === null ? [] : $data;
+    }
+
+    public static function getFilesListFolder(int $folderId): array
+    {
+        $data = Db::findBy(
+            'file',
+            ['id', 'folderId', 'serverName', 'origenName', 'mimeType', 'size'],
+            Config::getConfig('database.dbColumns.file'),
+            ['folderId' => $folderId]
+        );
 
         return $data === null ? [] : $data;
     }

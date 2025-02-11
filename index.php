@@ -68,6 +68,9 @@ $urlList = [
     '/directories/get/{id}' => [
         'GET' => ['FolderController', 'get'],
     ],
+    '/directories/delete/{id}' => [
+        'DELETE' => ['FolderController', 'remove'],
+    ],
     '/' => [
         'GET' => ['IndexController', 'getIndexHtml'],
     ],

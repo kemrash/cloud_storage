@@ -9,11 +9,13 @@ use Core\Request;
 use Core\Response;
 use Core\Response\JSONResponse;
 use Flow\Request as FlowRequest;
+use Traits\PageTrait;
 use Traits\UserTrait;
 
 class FilesController
 {
     use UserTrait;
+    use PageTrait;
 
     public function list(): Response
     {
@@ -30,8 +32,8 @@ class FilesController
             return $response;
         }
 
-        if (!isset($params[0]) || !ctype_digit($params[0])) {
-            return new Response('html', 'Страница не найдена', 404);
+        if ($response = $this->checkNotFoundPage($params[0])) {
+            return $response;
         }
 
         $fileId = (int) $params[0];
@@ -119,8 +121,8 @@ class FilesController
 
         $userId = (int) $_SESSION['id'];
 
-        if (!isset($params[0]) || !ctype_digit($params[0])) {
-            return new Response('html', 'Страница не найдена', 404);
+        if ($response = $this->checkNotFoundPage($params[0])) {
+            return $response;
         }
 
         $fileId = (int) $params[0];

@@ -22,7 +22,7 @@ class FileService
 {
     public function getFilesList(int $id): Response
     {
-        $data = App::getService('fileRepository')::getFilesList($id);
+        $data = App::getService('fileRepository')::getFilesListUser($id);
 
         return new JSONResponse($data);
     }
@@ -164,11 +164,17 @@ class FileService
 
     public function deleteUserFile(int $userId, int $fileId): Response
     {
-        return $this->processUserFileWithTransaction($userId, $fileId, 'fileRepository', 'deleteFile', [$fileId]);
+        return $this->processUserFileWithTransaction($userId, $fileId, 'fileRepository', 'deleteFile', [$fileId], true);
     }
 
-    private function processUserFileWithTransaction(int $userId, int $fileId, string $serviceName, string $method, array $params): Response
-    {
+    private function processUserFileWithTransaction(
+        int $userId,
+        int $fileId,
+        string $serviceName,
+        string $method,
+        array $params,
+        bool $isDeleteFile = false
+    ): Response {
         $connection = Db::$connection;
         $connection->beginTransaction();
 
@@ -182,6 +188,18 @@ class FileService
             }
 
             call_user_func_array([App::getService($serviceName), $method], $params);
+
+            if ($isDeleteFile) {
+                $pathFilesStorage = Config::getConfig('app.uploadFile.folderFileStorage');
+                $fullPath = $pathFilesStorage . $file->serverName;
+
+                if (file_exists($fullPath)) {
+                    if (!unlink($fullPath)) {
+                        $connection->rollBack();
+                        throw new AppException(__CLASS__, "Ошибка при удалении файла {$fullPath}");
+                    }
+                }
+            }
 
             $connection->commit();
 

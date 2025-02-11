@@ -7,11 +7,13 @@ use Core\Helper;
 use Core\Request;
 use Core\Response;
 use Core\Response\JSONResponse;
+use Traits\PageTrait;
 use Traits\UserTrait;
 
 class FolderController
 {
     use UserTrait;
+    use PageTrait;
 
     public function add(Request $request): Response
     {
@@ -53,14 +55,30 @@ class FolderController
             return $response;
         }
 
-        if (!isset($params[0]) || !ctype_digit($params[0])) {
-            return new Response('html', 'Страница не найдена', 404);
+        if ($response = $this->checkNotFoundPage($params[0])) {
+            return $response;
         }
 
         $userId = (int) $_SESSION['id'];
         $folderId = (int) $params[0];
 
         return App::getService('folderService')->getUserFolder($userId, $folderId);
+    }
+
+    public function remove(array $params): Response
+    {
+        if ($response = $this->checkUserAuthorization()) {
+            return $response;
+        }
+
+        if ($response = $this->checkNotFoundPage($params[0])) {
+            return $response;
+        }
+
+        $userId = (int) $_SESSION['id'];
+        $folderId = (int) $params[0];
+
+        return App::getService('folderService')->removeUserFolder($userId, $folderId);
     }
 
     private function getValidatedData(Request $request, string $httpMethod, string $idKey): array|Response

@@ -7,7 +7,6 @@ use Core\Response;
 
 class Router
 {
-    private const PARAMETER = '{id}';
     private array $routes;
 
     function __construct(array $routes)
@@ -25,7 +24,12 @@ class Router
         foreach ($unitsRoute as &$unit) {
             if (preg_match('/^\d+$/', (string) $unit) === 1) {
                 $params[] = $unit;
-                $unit = self::PARAMETER;
+                $unit = '{id}';
+            }
+
+            if (filter_var($unit, FILTER_VALIDATE_EMAIL)) {
+                $params[] = $unit;
+                $unit = '{email}';
             }
         }
 
@@ -46,9 +50,7 @@ class Router
         $controllerClass = 'Controllers\\' . $controllerClass;
 
         if (!class_exists($controllerClass) || !method_exists($controllerClass, $methodName)) {
-            $response = new Response('html', 'Не найден контроллер или экшен', 500);
-
-            return $response;
+            throw new AppException(__CLASS__, 'Не найден контроллер или экшен');
         }
 
         $controller = new $controllerClass();

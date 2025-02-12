@@ -28,17 +28,14 @@ class FilesController
 
     public function getFile(array $params): Response
     {
-        if ($response = $this->checkUserAuthorization()) {
+        if ($response = $this->validationSessionIdAndIntParams($params)) {
             return $response;
         }
 
-        if ($response = $this->checkNotFoundPage($params[0])) {
-            return $response;
-        }
-
+        $userId = (int) $_SESSION['id'];
         $fileId = (int) $params[0];
 
-        return App::getService('fileService')->getUserFile($fileId);
+        return App::getService('fileService')->getUserFile($userId, $fileId);
     }
 
     public function add(Request $request): Response
@@ -128,5 +125,56 @@ class FilesController
         $fileId = (int) $params[0];
 
         return App::getService('fileService')->deleteUserFile($userId, $fileId);
+    }
+
+    public function shareList(array $params): Response
+    {
+        if ($response = $this->validationSessionIdAndIntParams($params)) {
+            return $response;
+        }
+
+        $userId = (int) $_SESSION['id'];
+        $fileId = (int) $params[0];
+
+        return App::getService('fileService')->getShareList($userId, $fileId);
+    }
+
+    public function addUserShareFile(array $params): Response
+    {
+        if ($response = $this->validationSessionIdAndIntParams($params)) {
+            return $response;
+        }
+
+        $userId = (int) $_SESSION['id'];
+        [$fileId, $shareUserId] = $params;
+
+        return App::getService('fileService')->addUserShareFile((int) $userId, (int) $fileId, (int) $shareUserId);
+    }
+
+    public function deleteUserShareFile(array $params): Response
+    {
+        if ($response = $this->validationSessionIdAndIntParams($params)) {
+            return $response;
+        }
+
+        $userId = (int) $_SESSION['id'];
+        [$fileId, $shareUserId] = $params;
+
+        return App::getService('fileService')->deleteUserShareFile((int) $userId, (int) $fileId, (int) $shareUserId);
+    }
+
+    private function validationSessionIdAndIntParams(array $params): ?Response
+    {
+        if ($response = $this->checkUserAuthorization()) {
+            return $response;
+        }
+
+        foreach ($params as $parameter) {
+            if ($response = $this->checkNotFoundPage($parameter)) {
+                return $response;
+            }
+        }
+
+        return null;
     }
 }

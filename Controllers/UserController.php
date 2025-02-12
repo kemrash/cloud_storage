@@ -8,9 +8,12 @@ use Core\Request;
 use Core\Response;
 use Core\Response\JSONResponse;
 use Models\User;
+use Traits\UserTrait;
 
 class UserController
 {
+    use UserTrait;
+
     public function list(): Response
     {
         $data = App::getService('userService')->getUsersList();
@@ -76,5 +79,14 @@ class UserController
         App::getService('session')->destroySession();
 
         return new JSONResponse();
+    }
+
+    public function searchByEmail(array $params): Response
+    {
+        if ($response = $this->checkUserAuthorization()) {
+            return $response;
+        }
+
+        return App::getService('userService')->searchUserByEmail($params[0]);
     }
 }

@@ -5,7 +5,6 @@ namespace Repositories;
 use Core\Config;
 use Core\Db;
 use Models\File;
-use Models\Folder;
 
 class FileRepository extends Db
 {
@@ -63,8 +62,28 @@ class FileRepository extends Db
         parent::updateOneBy('file', ['origenName' => $origenName], ['id' => $id], Config::getConfig('database.dbColumns.file'));
     }
 
-    public static function deleteFile(int $id)
+    public static function deleteFile(int $id): void
     {
         parent::deleteOneBy('file', ['id' => $id], Config::getConfig('database.dbColumns.user'));
+    }
+
+    public static function getFileShareList(int $fileId): array
+    {
+        return parent::findBy('share', ['id', 'userId', 'fileId'], Config::getConfig('database.dbColumns.share'), ['fileId' => $fileId]);
+    }
+
+    public static function addUserShareFile(int $userId, int $fileId): void
+    {
+        parent::insert('share', ['userId' => $userId, 'fileId' => $fileId], Config::getConfig('database.dbColumns.share'));
+    }
+
+    public static function getUsersFileShare(int $fileId): array
+    {
+        return parent::findBy('share', ['userId'], Config::getConfig('database.dbColumns.share'), ['fileId' => $fileId]);
+    }
+
+    public static function deleteShareBy(int $shareUserId, int $fileId): void
+    {
+        parent::deleteOneBy('share', ['userId' => $shareUserId, 'fileId' => $fileId], Config::getConfig('database.dbColumns.share'));
     }
 }

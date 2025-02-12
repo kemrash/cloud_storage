@@ -152,4 +152,15 @@ class UserService
             App::setService('user', $user);
         }
     }
+
+    public function searchUserByEmail(string $email): Response
+    {
+        $user = App::getService('userRepository')::getUserBy(['email' => $email]);
+
+        if ($user === null) {
+            return new Response('html', 'Пользователь не найден', 404);
+        }
+
+        return new JSONResponse(['id' => $user->id]);
+    }
 }

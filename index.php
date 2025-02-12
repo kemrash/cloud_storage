@@ -29,6 +29,9 @@ $urlList = [
         'GET' => ['ResetPasswordController', 'preparationResetPassword'],
         'PATCH' => ['ResetPasswordController', 'resetPassword'],
     ],
+    '/users/search/{email}' => [
+        'GET' => ['UserController', 'searchByEmail'],
+    ],
     '/admin/users/list' => [
         'GET' => ['AdminController', 'list'],
     ],
@@ -58,6 +61,13 @@ $urlList = [
     ],
     '/files/remove/{id}' => [
         'DELETE' => ['FilesController', 'remove'],
+    ],
+    '/files/share/{id}' => [
+        'GET' => ['FilesController', 'shareList'],
+    ],
+    '/files/share/{id}/{id}' => [
+        'PUT' => ['FilesController', 'addUserShareFile'],
+        'DELETE' => ['FilesController', 'deleteUserShareFile'],
     ],
     '/directories/list' => [
         'GET' => ['FolderController', 'list'],

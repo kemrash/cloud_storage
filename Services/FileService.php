@@ -28,12 +28,18 @@ class FileService
         return new JSONResponse($data);
     }
 
-    public function getUserFile(int $fileId): Response
+    public function getUserFile(int $userId, int $fileId): Response
     {
         $file = App::getService('fileRepository')::getFileById($fileId);
 
         if ($file === null) {
             return new Response('html', 'Страница не найдена', 404);
+        }
+
+        $fileShareUsersList = App::getService('fileRepository')::getUsersFileShare($fileId);
+
+        if ($file->userId !== $userId && !in_array(['userId' => $userId], $fileShareUsersList)) {
+            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
         }
 
         return new JSONResponse([
@@ -166,6 +172,81 @@ class FileService
     public function deleteUserFile(int $userId, int $fileId): Response
     {
         return $this->processUserFileWithTransaction($userId, $fileId, 'fileRepository', 'deleteFile', [$fileId], true);
+    }
+
+    public function getShareList(int $userId, int $fileId): Response
+    {
+        $file = App::getService('fileRepository')::getFileById($fileId);
+
+        if ($file === null || $file->userId !== $userId) {
+            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+        }
+
+        $data = App::getService('fileRepository')::getFileShareList($fileId);
+
+        return new JSONResponse($data);
+    }
+
+    public function addUserShareFile(int $userId, int $fileId, int $shareUserId): Response
+    {
+        $connection = Db::$connection;
+        $connection->beginTransaction();
+
+        try {
+            $file = App::getService('fileRepository')::getFileById($fileId);
+
+            if ($file === null || $file->userId !== $userId) {
+                $connection->rollBack();
+                return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+            }
+
+            $user = App::getService('userRepository')::getUserBy(['id' => $shareUserId]);
+
+            if ($user === null) {
+                $connection->rollBack();
+                return new JSONResponse(Helper::showError('Пользователь не найден'), 400);
+            }
+
+            if ($file->userId === $shareUserId) {
+                $connection->rollBack();
+                return new JSONResponse(Helper::showError('Этот файл и так принадлежит пользователю'), 400);
+            }
+
+            try {
+                App::getService('fileRepository')::addUserShareFile($shareUserId, $fileId);
+
+                $connection->commit();
+
+                return new JSONResponse();
+            } catch (PDOException $e) {
+                if ($e->getCode() === '23000') {
+                    $connection->rollBack();
+
+                    return new JSONResponse(Helper::showError('Пользователь уже имеет доступ к этому файлу'), 400);
+                }
+
+                throw new Exception($e->getMessage());
+            }
+        } catch (Exception $e) {
+            if ($connection->inTransaction()) {
+                $connection->rollBack();
+            }
+
+            throw new AppException(__CLASS__, $e->getMessage());
+        }
+    }
+
+    public function deleteUserShareFile(int $userId, int $fileId, int $shareUserId): Response
+    {
+        $file = App::getService('fileRepository')::getFileById($fileId);
+
+        if ($file === null || $file->userId !== $userId) {
+            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+        }
+
+        App::getService('fileRepository')::deleteShareBy($shareUserId, $fileId);
+
+        return new JSONResponse();
     }
 
     private function processUserFileWithTransaction(

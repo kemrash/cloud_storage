@@ -6,6 +6,7 @@ use Core\App;
 use Core\AppException;
 use Core\Config;
 use Core\Db;
+use Core\FileStorage;
 use Core\Helper;
 use Core\Response;
 use Core\Response\JSONResponse;
@@ -190,15 +191,8 @@ class FileService
             call_user_func_array([App::getService($serviceName), $method], $params);
 
             if ($isDeleteFile) {
-                $pathFilesStorage = Config::getConfig('app.uploadFile.folderFileStorage');
-                $fullPath = $pathFilesStorage . $file->serverName;
-
-                if (file_exists($fullPath)) {
-                    if (!unlink($fullPath)) {
-                        $connection->rollBack();
-                        throw new AppException(__CLASS__, "Ошибка при удалении файла {$fullPath}");
-                    }
-                }
+                $filesStorage = new FileStorage();
+                $filesStorage->deleteFile($file->serverName);
             }
 
             $connection->commit();

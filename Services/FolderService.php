@@ -4,8 +4,8 @@ namespace Services;
 
 use Core\App;
 use Core\AppException;
-use Core\Config;
 use Core\Db;
+use Core\FileStorage;
 use Core\Helper;
 use Core\Response;
 use Core\Response\JSONResponse;
@@ -14,6 +14,13 @@ use PDOException;
 
 class FolderService
 {
+    public function getUserFoldersList(int $userId): Response
+    {
+        $data = App::getService('folderRepository')::getUserFoldersList($userId);
+
+        return new JSONResponse($data);
+    }
+
     public function createUserFolder(int $userId, int $parentId, string $name): Response
     {
         if ($parentId === 0) {
@@ -76,12 +83,19 @@ class FolderService
             return new Response('html', 'Страница не найдена', 404);
         }
 
-        $this->deleteFolderAndFiles((int) $folder->id);
+        if ($folder->parentId === 0) {
+            return new JSONResponse(Helper::showError('Нельзя удалить корневую папку'), 400);
+        }
+
+        $filesList = $this->deleteFolderAndReturnFilesList((int) $folder->id);
+
+        $filesStorage = new FileStorage();
+        $filesStorage->deleteFiles($filesList);
 
         return new JSONResponse();
     }
 
-    public function deleteFolderAndFiles(int $folderId, bool $isTransaction = false): void
+    public function deleteFolderAndReturnFilesList(int $folderId, bool $isTransaction = false): array
     {
         $filesList = [];
 
@@ -106,20 +120,6 @@ class FolderService
             throw new AppException(__CLASS__, $e->getMessage());
         }
 
-        if (count($filesList) === 0) {
-            return;
-        }
-
-        $pathFilesStorage = Config::getConfig('app.uploadFile.folderFileStorage');
-
-        foreach ($filesList as $file) {
-            $fullPath = $pathFilesStorage . $file['serverName'];
-
-            if (file_exists($fullPath)) {
-                if (!unlink($fullPath)) {
-                    Helper::writeLog("Ошибка при удалении файла {$fullPath}");
-                }
-            }
-        }
+        return $filesList;
     }
 }

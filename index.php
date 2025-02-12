@@ -59,6 +59,9 @@ $urlList = [
     '/files/remove/{id}' => [
         'DELETE' => ['FilesController', 'remove'],
     ],
+    '/directories/list' => [
+        'GET' => ['FolderController', 'list'],
+    ],
     '/directories/add' => [
         'POST' => ['FolderController', 'add'],
     ],

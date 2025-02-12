@@ -21,6 +21,7 @@ class Session
 
             if ($user === null) {
                 $this->destroySession();
+                return;
             }
 
             $_SESSION['id'] = $user->id;

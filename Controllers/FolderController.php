@@ -15,6 +15,15 @@ class FolderController
     use UserTrait;
     use PageTrait;
 
+    public function list(): Response
+    {
+        if ($response = $this->checkUserAuthorization()) {
+            return $response;
+        }
+
+        return App::getService('folderService')->getUserFoldersList((int) $_SESSION['id']);
+    }
+
     public function add(Request $request): Response
     {
         if ($response = $this->checkUserAuthorization()) {

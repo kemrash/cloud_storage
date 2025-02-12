@@ -75,6 +75,11 @@ class FolderRepository extends Db
         return new Folder($folder['userId'], $folder['parentId'], $folder['name'], $folder['id']);
     }
 
+    public static function getUserFoldersList(int $id): array
+    {
+        return Db::findBy('folder', ['id'], Config::getConfig('database.dbColumns.folder'), ['userId' => $id]);
+    }
+
     public static function deleteFilesAndFolderByFolderId(int $id): void
     {
         Db::deleteOneBy('file', ['folderId' => $id], Config::getConfig('database.dbColumns.file'));

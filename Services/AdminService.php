@@ -6,9 +6,11 @@ use Core\App;
 use Core\AppException;
 use Core\Config;
 use Core\Db;
+use Core\FileStorage;
 use Core\Helper;
 use Core\Response;
 use Core\Response\JSONResponse;
+use Exception;
 use Models\User;
 use PDOException;
 
@@ -123,7 +125,35 @@ class AdminService
             return new JSONResponse(Helper::showError('Нельзя удалять системного пользователя'));
         }
 
-        App::getService('adminRepository')::deleteUserBy(['id' => $id]);
+        $filesList = [];
+
+        $connection = Db::$connection;
+        $connection->beginTransaction();
+
+        try {
+            $foldersList = App::getService('folderRepository')::getUserFoldersList((int) $id);
+
+            foreach ($foldersList as $folder) {
+                $newFiles = App::getService('folderService')->deleteFolderAndReturnFilesList($folder['id'], true);
+
+                $filesList = [...$filesList, ...$newFiles];
+            }
+
+            App::getService('adminRepository')::deleteUserBy(['id' => $id]);
+
+            $connection->commit();
+        } catch (Exception $e) {
+            if ($connection->inTransaction()) {
+                $connection->rollBack();
+            }
+
+            throw new AppException(__CLASS__, $e->getMessage());
+        }
+
+        if (count($filesList) > 0) {
+            $fileStorage = new FileStorage();
+            $fileStorage->deleteFiles($filesList);
+        }
 
         return new JSONResponse();
     }

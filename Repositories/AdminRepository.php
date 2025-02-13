@@ -7,7 +7,7 @@ use Core\Config;
 use Core\Db;
 use Models\Folder;
 
-class AdminRepository  extends Db
+class AdminRepository extends Db
 {
     public static function createUser(array $params): array
     {

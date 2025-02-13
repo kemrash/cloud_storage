@@ -9,7 +9,7 @@ class Config
     public static function getConfig(?string $key = null, mixed $default = null): mixed
     {
         if (!isset(self::$config)) {
-            self::$config = require __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'config.php';
+            self::$config = require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'config.php';
         }
 
         if ($key === null) {

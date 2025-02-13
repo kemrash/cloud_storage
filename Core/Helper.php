@@ -3,6 +3,7 @@
 namespace Core;
 
 use DateTime;
+use Throwable;
 
 class Helper
 {
@@ -16,5 +17,12 @@ class Helper
         $data = $text === '' ? ['status' => 'error'] : ['status' => 'error', 'data' => trim($text)];
 
         return $data;
+    }
+
+    public static function exceptionHandler(Throwable $e): void
+    {
+        Helper::writeLog($e->getMessage());
+        http_response_code(500);
+        include './Templates/error.html';
     }
 }

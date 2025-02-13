@@ -1,13 +1,15 @@
 <?php
 
 use Core\App;
-use Core\AppException;
 use Core\Db;
+use Core\Helper;
 use Core\Request;
 use Core\Response;
 use Core\Router;
 
 require_once './autoload.php';
+
+set_exception_handler([Helper::class, 'exceptionHandler']);
 
 $urlList = [
     '/users/list' => [
@@ -87,35 +89,34 @@ $urlList = [
     '/' => [
         'GET' => ['IndexController', 'getIndexHtml'],
     ],
+    '/install' => [
+        'POST' => ['InstallController', 'install'],
+    ],
 ];
 
-try {
-    $request = new Request();
+$request = new Request();
 
+if (file_exists('./config.php')) {
     Db::getConnection();
-
-    new App();
-
-    App::getService('session')->startSession();
-
-    $router = new Router($urlList);
-    $response = $router->processRequest($request);
-
-    if ($response === null) {
-        $response = new Response('html', 'Что то пошло не так');
-    }
-
-    http_response_code($response->getStatusCode());
-
-    if ($response->getType() === 'json') {
-        header('Content-Type: application/json');
-    } else if ($response->getHeader() !== '') {
-        header($response->getHeader());
-    }
-
-    echo $response->getData();
-} catch (AppException $e) {
-    $e->log();
-    http_response_code(500);
-    echo 'Произошла ошибка сервера';
 }
+
+new App();
+
+App::getService('session')->startSession();
+
+$router = new Router($urlList);
+$response = $router->processRequest($request);
+
+if ($response === null) {
+    $response = new Response('html', 'Что то пошло не так');
+}
+
+http_response_code($response->getStatusCode());
+
+if ($response->getType() === 'json') {
+    header('Content-Type: application/json');
+} else if ($response->getHeader() !== '') {
+    header($response->getHeader());
+}
+
+echo $response->getData();

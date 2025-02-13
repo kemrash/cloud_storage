@@ -10,9 +10,4 @@ class AppException extends Exception
     {
         parent::__construct("{$className}: {$text}");
     }
-
-    public function log(): void
-    {
-        Helper::writeLog($this->getMessage());
-    }
 }

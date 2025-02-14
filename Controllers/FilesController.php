@@ -163,6 +163,22 @@ class FilesController
         return App::getService('fileService')->deleteUserShareFile((int) $userId, (int) $fileId, (int) $shareUserId);
     }
 
+    public function download(Request $request): Response
+    {
+        if ($response = $this->checkUserAuthorization()) {
+            return $response;
+        }
+
+        if (!isset($request->getData()['GET']['file']) || !is_string($request->getData()['GET']['file'])) {
+            return new Response('html', 'Страница не найдена', 404);
+        }
+
+        $userId = (int) $_SESSION['id'];
+        $serverName = $request->getData()['GET']['file'];
+
+        return App::getService('fileService')->downloadFile($userId, $serverName);
+    }
+
     private function validationSessionIdAndIntParams(array $params): ?Response
     {
         if ($response = $this->checkUserAuthorization()) {

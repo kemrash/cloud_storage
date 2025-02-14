@@ -30,7 +30,7 @@ class FileService
 
     public function getUserFile(int $userId, int $fileId): Response
     {
-        $file = App::getService('fileRepository')::getFileById($fileId);
+        $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
 
         if ($file === null) {
             return new Response('html', 'Страница не найдена', 404);
@@ -176,7 +176,7 @@ class FileService
 
     public function getShareList(int $userId, int $fileId): Response
     {
-        $file = App::getService('fileRepository')::getFileById($fileId);
+        $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
 
         if ($file === null || $file->userId !== $userId) {
             return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
@@ -193,7 +193,7 @@ class FileService
         $connection->beginTransaction();
 
         try {
-            $file = App::getService('fileRepository')::getFileById($fileId);
+            $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
 
             if ($file === null || $file->userId !== $userId) {
                 $connection->rollBack();
@@ -238,7 +238,7 @@ class FileService
 
     public function deleteUserShareFile(int $userId, int $fileId, int $shareUserId): Response
     {
-        $file = App::getService('fileRepository')::getFileById($fileId);
+        $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
 
         if ($file === null || $file->userId !== $userId) {
             return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
@@ -247,6 +247,26 @@ class FileService
         App::getService('fileRepository')::deleteShareBy($shareUserId, $fileId);
 
         return new JSONResponse();
+    }
+
+    public function downloadFile(int $userId, string $serverName): ?Response
+    {
+        $file = App::getService('fileRepository')::getFileBy(['serverName' => $serverName]);
+
+        if ($file === null) {
+            return new Response('html', 'Страница не найдена', 404);
+        }
+
+        $fileShareUsersList = App::getService('fileRepository')::getUsersFileShare($file->id);
+
+        if ($file->userId !== $userId && !in_array(['userId' => $userId], $fileShareUsersList)) {
+            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+        }
+
+        $filesStorage = new FileStorage();
+        if ($filesStorage->fileForceDownload($file->serverName, $file->origenName, $file->mimeType) === false) {
+            return new Response('html', 'Страница не найдена', 404);
+        }
     }
 
     private function processUserFileWithTransaction(
@@ -261,7 +281,7 @@ class FileService
         $connection->beginTransaction();
 
         try {
-            $file = App::getService('fileRepository')::getFileById($fileId);
+            $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
 
             if ($file === null || $file->userId !== $userId) {
                 $connection->rollBack();

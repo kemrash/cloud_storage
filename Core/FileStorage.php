@@ -2,6 +2,8 @@
 
 namespace Core;
 
+use Exception;
+
 class FileStorage
 {
     private string $pathFilesStorage;
@@ -31,5 +33,35 @@ class FileStorage
         foreach ($filesList as $file) {
             $this->deleteFile($file['serverName']);
         }
+    }
+
+    public function fileForceDownload(string $serverName, string $origenName, string $contentType = 'application/octet-stream'): ?bool
+    {
+        $fullPath = $this->pathFilesStorage . $serverName;
+
+        if (!file_exists($fullPath)) {
+            return false;
+        }
+
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        header('Content-Description: File Transfer');
+        header("Content-Type: {$contentType}");
+        header("Content-Disposition: attachment; filename=\"" . rawurlencode($origenName) . "\"; filename*=UTF-8''" . rawurlencode($origenName));
+        header('Content-Transfer-Encoding: binary');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        header('Content-Length: ' . filesize($fullPath));
+
+        if (readfile($fullPath) === false) {
+            Helper::writeLog(__CLASS__ . ': Ошибка чтения файла ' . $fullPath);
+
+            return false;
+        }
+
+        exit;
     }
 }

@@ -71,6 +71,9 @@ $urlList = [
         'PUT' => ['FilesController', 'addUserShareFile'],
         'DELETE' => ['FilesController', 'deleteUserShareFile'],
     ],
+    '/files/download' => [
+        'GET' => ['FilesController', 'download'],
+    ],
     '/directories/list' => [
         'GET' => ['FolderController', 'list'],
     ],

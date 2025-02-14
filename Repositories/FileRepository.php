@@ -32,9 +32,9 @@ class FileRepository extends Db
         return $data === null ? [] : $data;
     }
 
-    public static function getFileById(int $id): ?File
+    public static function getFileBy(array $params): ?File
     {
-        $data = Db::findOneBy('file', ['id' => $id], Config::getConfig('database.dbColumns.file'));
+        $data = Db::findOneBy('file', $params, Config::getConfig('database.dbColumns.file'));
 
         if ($data === null) {
             return null;

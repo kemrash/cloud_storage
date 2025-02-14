@@ -5,11 +5,9 @@ namespace Services;
 use Core\Helper;
 use Core\Response;
 use Core\Response\JSONResponse;
-use Exception;
 use Models\User;
 use PDO;
 use PDOException;
-use Throwable;
 
 class InstallService
 {
@@ -65,15 +63,13 @@ class InstallService
 
         try {
             $connection = new PDO($textConnection, $config['database']['user'], $config['database']['password']);
-        } catch (PDOException $e) {
-            // Helper::writeLog(__CLASS__ . ': ' . $e->getMessage());
+        } catch (PDOException $_) {
 
             return new JSONResponse(Helper::showError('Не удалось подключиться к базе данных, проверьте правильность введенных данных.' .
                 'Поля dbHost, dbName, dbUser, dbPassword обязательны '), 400);
         }
 
         if (file_exists('./Sql/install.sql') === false) {
-
             $textError = 'Не удалось найти файл базы данных';
             Helper::writeLog(__CLASS__ . ': ' . $textError);
 

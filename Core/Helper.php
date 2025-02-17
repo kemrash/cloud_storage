@@ -2,6 +2,7 @@
 
 namespace Core;
 
+use Core\Response\ServerErrorResponse;
 use DateTime;
 use Throwable;
 
@@ -22,7 +23,10 @@ class Helper
     public static function exceptionHandler(Throwable $e): void
     {
         Helper::writeLog($e->getMessage());
-        http_response_code(500);
-        include './Templates/error.html';
+
+        $response = new ServerErrorResponse();
+
+        http_response_code($response->getStatusCode());
+        echo $response->getData();
     }
 }

@@ -10,4 +10,9 @@ class AccessDeniedResponse extends Response
     {
         parent::__construct('Доступ запрещен', 403);
     }
+
+    public function getData(): string
+    {
+        return $this->renderErrorResponse();
+    }
 }

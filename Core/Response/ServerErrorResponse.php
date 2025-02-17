@@ -4,11 +4,11 @@ namespace Core\Response;
 
 use Core\Response;
 
-class PageNotFoundResponse extends Response
+class ServerErrorResponse extends Response
 {
     public function __construct()
     {
-        parent::__construct('Страница не найдена', 404);
+        parent::__construct('К сожалению произошла ошибка сервера, попробуйте позже', 500);
     }
 
     public function getData(): string

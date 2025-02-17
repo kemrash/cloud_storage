@@ -15,18 +15,25 @@ class Response
         $this->header = $header;
     }
 
-    public function getData()
+    public function getData(): string
     {
         return $this->data;
     }
 
-    public function getHeader()
+    public function getHeader(): string
     {
         return $this->header;
     }
 
-    public function getStatusCode()
+    public function getStatusCode(): int
     {
         return $this->statusCode;
+    }
+
+    protected function renderErrorResponse(): string
+    {
+        $render = new Render('error.html', ['code' => $this->statusCode, 'message' => $this->data]);
+
+        return $render->getRender();
     }
 }

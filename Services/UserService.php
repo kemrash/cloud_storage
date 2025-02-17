@@ -7,6 +7,7 @@ use Core\Config;
 use Core\Helper;
 use Core\Response;
 use Core\Response\JSONResponse;
+use Core\Response\PageNotFoundResponse;
 use Exception;
 
 class UserService
@@ -34,7 +35,7 @@ class UserService
         $user = App::getService('userRepository')::getUserBy(['id' => (int) $id]);
 
         if ($user === null) {
-            return new JSONResponse(Helper::showError('Запрошенного пользователя не существует'), 400);
+            return new PageNotFoundResponse();
         }
 
         foreach (Config::getConfig('database.dbColumns.user') as $parameter) {
@@ -158,7 +159,7 @@ class UserService
         $user = App::getService('userRepository')::getUserBy(['email' => $email]);
 
         if ($user === null) {
-            return new Response('html', 'Пользователь не найден', 404);
+            return new PageNotFoundResponse();
         }
 
         return new JSONResponse(['id' => $user->id]);

@@ -5,7 +5,9 @@ namespace Controllers;
 use Core\App;
 use Core\Request;
 use Core\Response;
+use Core\Response\AccessDeniedResponse;
 use Core\Response\JSONResponse;
+use Core\Response\PageNotFoundResponse;
 
 class AdminController
 {
@@ -55,12 +57,6 @@ class AdminController
 
         $id = $params[0];
 
-        $data = App::getService('adminService')->getUserById($id);
-
-        if ($data === null) {
-            return $this->pageNotFound();
-        }
-
         return App::getService('userService')->updateUser($request->getData()['PUT'], (int) $id, $_SESSION['role']);
     }
 
@@ -71,11 +67,11 @@ class AdminController
 
     private function accessForbidden(): Response
     {
-        return new Response('html', 'Доступ запрещён', 403);
+        return new AccessDeniedResponse();
     }
 
     private function pageNotFound(): Response
     {
-        return new Response('html', 'Страница не найдена', 404);
+        return new PageNotFoundResponse();
     }
 }

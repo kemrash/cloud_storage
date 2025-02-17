@@ -9,6 +9,7 @@ use Core\FileStorage;
 use Core\Helper;
 use Core\Response;
 use Core\Response\JSONResponse;
+use Core\Response\PageNotFoundResponse;
 use Models\Folder;
 use PDOException;
 
@@ -56,7 +57,7 @@ class FolderService
     {
         $data = App::getService('folderRepository')::renameFolder($userId, $id, $name);
 
-        return isset($data['code']) && $data['code'] === 404 ? new Response('html', 'Страница не найдена', 404) : new JSONResponse($data);
+        return isset($data['code']) && $data['code'] === 404 ? new PageNotFoundResponse() : new JSONResponse($data);
     }
 
     public function getUserFolder(int $userId, int $folderId): Response
@@ -64,7 +65,7 @@ class FolderService
         $folder = App::getService('folderRepository')::getFolderBy($userId, $folderId);
 
         if ($folder === null) {
-            return new Response('html', 'Страница не найдена', 404);
+            return new PageNotFoundResponse();
         }
 
         return new JSONResponse([
@@ -80,7 +81,7 @@ class FolderService
         $folder = App::getService('folderRepository')::getFolderBy($userId, $folderId);
 
         if ($folder === null) {
-            return new Response('html', 'Страница не найдена', 404);
+            return new PageNotFoundResponse();
         }
 
         if ($folder->parentId === 0) {

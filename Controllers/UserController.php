@@ -6,7 +6,9 @@ use Core\App;
 use Core\Helper;
 use Core\Request;
 use Core\Response;
+use Core\Response\AccessDeniedResponse;
 use Core\Response\JSONResponse;
+use Core\Response\PageNotFoundResponse;
 use Models\User;
 use Traits\UserTrait;
 
@@ -27,7 +29,7 @@ class UserController
         $data = App::getService('userService')->getUserById($params[0]);
 
         if ($data === null) {
-            return new Response('html', 'Страница не найдена', 404);
+            return new PageNotFoundResponse();
         }
 
         return new JSONResponse($data);
@@ -36,7 +38,7 @@ class UserController
     public function update(Request $request): Response
     {
         if (!isset($_SESSION['id']) || isset($request->getData()['PUT']['id']) && $_SESSION['id'] !== (int) $request->getData()['PUT']['id']) {
-            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+            return new AccessDeniedResponse();
         }
 
         return App::getService('userService')->updateUser($request->getData()['PUT'], (int) $_SESSION['id'], $_SESSION['role']);

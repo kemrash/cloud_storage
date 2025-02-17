@@ -2,8 +2,6 @@
 
 namespace Core;
 
-use Exception;
-
 class App
 {
     private const FOLDERS = ['Repositories', 'Services', 'Models'];

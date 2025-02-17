@@ -8,6 +8,7 @@ use Core\Helper;
 use Core\Request;
 use Core\Response;
 use Core\Response\JSONResponse;
+use Core\Response\PageNotFoundResponse;
 use Flow\Request as FlowRequest;
 use Traits\PageTrait;
 use Traits\UserTrait;
@@ -170,7 +171,7 @@ class FilesController
         }
 
         if (!isset($request->getData()['GET']['file']) || !is_string($request->getData()['GET']['file'])) {
-            return new Response('html', 'Страница не найдена', 404);
+            return new PageNotFoundResponse();
         }
 
         $userId = (int) $_SESSION['id'];

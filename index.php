@@ -4,7 +4,7 @@ use Core\App;
 use Core\Db;
 use Core\Helper;
 use Core\Request;
-use Core\Response;
+use Core\Response\PageNotFoundResponse;
 use Core\Router;
 
 require_once './autoload.php';
@@ -111,15 +111,9 @@ $router = new Router($urlList);
 $response = $router->processRequest($request);
 
 if ($response === null) {
-    $response = new Response('html', 'Что то пошло не так');
+    $response = new PageNotFoundResponse();
 }
 
 http_response_code($response->getStatusCode());
-
-if ($response->getType() === 'json') {
-    header('Content-Type: application/json');
-} else if ($response->getHeader() !== '') {
-    header($response->getHeader());
-}
-
+header($response->getHeader());
 echo $response->getData();

@@ -2,8 +2,6 @@
 
 namespace Core;
 
-use Exception;
-
 class FileStorage
 {
     private string $pathFilesStorage;

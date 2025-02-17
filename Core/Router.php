@@ -4,6 +4,7 @@ namespace Core;
 
 use Core\Request;
 use Core\Response;
+use Core\Response\PageNotFoundResponse;
 
 class Router
 {
@@ -40,7 +41,7 @@ class Router
             !is_array($this->routes[$route][$method]) ||
             count($this->routes[$route][$method]) !== 2
         ) {
-            $response = new Response('html', 'Страница не найдена', 404);
+            $response = new PageNotFoundResponse();
 
             return $response;
         }

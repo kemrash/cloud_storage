@@ -9,7 +9,9 @@ use Core\Db;
 use Core\FileStorage;
 use Core\Helper;
 use Core\Response;
+use Core\Response\AccessDeniedResponse;
 use Core\Response\JSONResponse;
+use Core\Response\PageNotFoundResponse;
 use Exception;
 use PDOException;
 use Ramsey\Uuid\Uuid;
@@ -33,13 +35,13 @@ class FileService
         $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
 
         if ($file === null) {
-            return new Response('html', 'Страница не найдена', 404);
+            return new PageNotFoundResponse();
         }
 
         $fileShareUsersList = App::getService('fileRepository')::getUsersFileShare($fileId);
 
         if ($file->userId !== $userId && !in_array(['userId' => $userId], $fileShareUsersList)) {
-            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+            return new AccessDeniedResponse();
         }
 
         return new JSONResponse([
@@ -64,7 +66,7 @@ class FileService
                     return new JSONResponse(Helper::showError('Папка не найдена'), 400);
                 }
 
-                return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+                return new AccessDeniedResponse();
             }
 
             $config = new FlowConfig();
@@ -96,7 +98,7 @@ class FileService
                         return new JSONResponse(Helper::showError('Папка не найдена'), 400);
                     }
 
-                    return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+                    return new AccessDeniedResponse();
                 }
 
                 $maxAttempts = 2;
@@ -179,7 +181,7 @@ class FileService
         $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
 
         if ($file === null || $file->userId !== $userId) {
-            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+            return new AccessDeniedResponse();
         }
 
         $data = App::getService('fileRepository')::getFileShareList($fileId);
@@ -197,7 +199,7 @@ class FileService
 
             if ($file === null || $file->userId !== $userId) {
                 $connection->rollBack();
-                return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+                return new AccessDeniedResponse();
             }
 
             $user = App::getService('userRepository')::getUserBy(['id' => $shareUserId]);
@@ -241,7 +243,7 @@ class FileService
         $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
 
         if ($file === null || $file->userId !== $userId) {
-            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+            return new AccessDeniedResponse();
         }
 
         App::getService('fileRepository')::deleteShareBy($shareUserId, $fileId);
@@ -254,7 +256,7 @@ class FileService
         $file = App::getService('fileRepository')::getFileBy(['serverName' => $serverName]);
 
         if ($file === null) {
-            return new Response('html', 'Страница не найдена', 404);
+            return new PageNotFoundResponse();
         }
 
         $fileShareUsersList = App::getService('fileRepository')::getUsersFileShare($file->id);
@@ -264,8 +266,9 @@ class FileService
         }
 
         $filesStorage = new FileStorage();
+
         if ($filesStorage->fileForceDownload($file->serverName, $file->origenName, $file->mimeType) === false) {
-            return new Response('html', 'Страница не найдена', 404);
+            return new PageNotFoundResponse();
         }
     }
 

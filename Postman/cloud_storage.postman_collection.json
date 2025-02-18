@@ -1,0 +1,834 @@
+{
+	"info": {
+		"_postman_id": "9821f035-81b4-451f-bc34-da959d2aa233",
+		"name": "cloud_storage",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40484582"
+	},
+	"item": [
+		{
+			"name": "users/list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/users/list",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"users",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "users/get/{id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/users/get/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"users",
+						"get",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "users/login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "email",
+							"value": "example@mail.ru",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "12345",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost/users/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"users",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "users/update",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "id",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "example@mail.ru",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "13",
+							"type": "text"
+						},
+						{
+							"key": "role",
+							"value": "admin",
+							"type": "text"
+						},
+						{
+							"key": "age",
+							"value": "25",
+							"type": "text"
+						},
+						{
+							"key": "gender",
+							"value": "male",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost/users/update",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"users",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "users/logout",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/users/logout",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"users",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user/search/{email}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/users/search/example@mail.ru",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"users",
+						"search",
+						"example@mail.ru"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "users/reset_password",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"protocolVersion": "http1"
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "http://localhost/users/reset_password?email=example@mail.ru",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"users",
+						"reset_password"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "example@mail.ru"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "users/reset_password",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "password",
+							"value": "123",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost/users/reset_password?id=1&token=33a5cb46c1d5fea3722ab83649df52dce1a6092b18ef26ab3a26bbce5885bf1d",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"users",
+						"reset_password"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1"
+						},
+						{
+							"key": "token",
+							"value": "33a5cb46c1d5fea3722ab83649df52dce1a6092b18ef26ab3a26bbce5885bf1d"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "admin/users/list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/admin/users/list",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"admin",
+						"users",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "admin/users/create",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "email",
+							"value": "1@2.ru",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "12",
+							"type": "text"
+						},
+						{
+							"key": "role",
+							"value": "user",
+							"type": "text"
+						},
+						{
+							"key": "age",
+							"value": "35",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "gender",
+							"value": "female",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost/admin/users/create",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"admin",
+						"users",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "admin/users/get/{id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/admin/users/get/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"admin",
+						"users",
+						"get",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "admin/users/update/{id}",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "email",
+							"value": "1@3.ru",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "13",
+							"type": "text"
+						},
+						{
+							"key": "role",
+							"value": "admin",
+							"type": "text"
+						},
+						{
+							"key": "age",
+							"value": "25",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "gender",
+							"value": "male",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost/admin/users/update/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"admin",
+						"users",
+						"update",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "admin/users/delete/{id}",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/admin/users/delete/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"admin",
+						"users",
+						"delete",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "files/list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/files/list",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"files",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "files/get/{id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/files/get/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"files",
+						"get",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "files/add",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": []
+						},
+						{
+							"key": "folderId",
+							"value": "2",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost/files/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"files",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "files/rename",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "id",
+							"value": "3",
+							"type": "text"
+						},
+						{
+							"key": "fileName",
+							"value": "test rename.webp",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost/files/rename",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"files",
+						"rename"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "files/remove/{id}",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/files/remove/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"files",
+						"remove",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "files/share/{id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/files/share/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"files",
+						"share",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "files/share/{id}/{user_id}",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/files/share/2/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"files",
+						"share",
+						"2",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "files/share/{id}/{user_id}",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/files/share/2/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"files",
+						"share",
+						"2",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "files/download",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/files/download?file=67af1498534ac3.06494234_7d07372b-ca4b-4bc9-b9fa-a93b8651a24f",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"files",
+						"download"
+					],
+					"query": [
+						{
+							"key": "file",
+							"value": "67af1498534ac3.06494234_7d07372b-ca4b-4bc9-b9fa-a93b8651a24f"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "directories/list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/directories/list",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"directories",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "directories/add",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "parentId",
+							"value": "2",
+							"type": "text"
+						},
+						{
+							"key": "name",
+							"value": "new folder",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost/directories/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"directories",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "directories/rename",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "id",
+							"value": "4",
+							"type": "text"
+						},
+						{
+							"key": "name",
+							"value": "test rename",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost/directories/rename",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"directories",
+						"rename"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "directories/get/{id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/directories/get/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"directories",
+						"get",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "directories/delete/{id}",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/directories/delete/3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"directories",
+						"delete",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "install",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "dbHost",
+							"value": "localhost",
+							"type": "text"
+						},
+						{
+							"key": "dbName",
+							"value": "cloud_storage",
+							"type": "text"
+						},
+						{
+							"key": "dbUser",
+							"value": "root",
+							"type": "text"
+						},
+						{
+							"key": "dbPassword",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "smtpHost",
+							"value": "mail.host.ru",
+							"type": "text"
+						},
+						{
+							"key": "smtpPort",
+							"value": "465",
+							"type": "text"
+						},
+						{
+							"key": "smtpUser",
+							"value": "example@mail.ru",
+							"type": "text"
+						},
+						{
+							"key": "smtpPassword",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "smtpFrom",
+							"value": "example@mail.ru",
+							"type": "text"
+						},
+						{
+							"key": "adminUser",
+							"value": "example@mail.ru",
+							"type": "text"
+						},
+						{
+							"key": "adminPassword",
+							"value": "12345",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost/install",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"install"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

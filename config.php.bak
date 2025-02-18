@@ -1,0 +1,75 @@
+<?php
+
+return [
+    'app' => [
+        'name' => 'My files',
+        'dateTimeFormat' => 'Y-m-d H:i:s',
+        'idUserSystem' => 0,
+        'uploadFile' => [
+            'folderFileStorage' => './Storage/',
+            'maxFileSize' => 2 * 1024 * 1024 * 1024,
+        ],
+    ],
+    'database' => [
+        'host' => '',
+        'name' => '',
+        'charset' => 'utf8',
+        'user' => '',
+        'password' => '',
+        'dbNames' => [
+            'user',
+            'reset_password',
+            'folder',
+            'file',
+            'share',
+        ],
+        'dbColumns' => [
+            'user' => [
+                'id',
+                'email',
+                'passwordEncrypted',
+                'role',
+                'age',
+                'gender',
+            ],
+            'reset_password' => [
+                'id',
+                'userId',
+                'hashedToken',
+                'expiresAt',
+                'createdAt',
+            ],
+            'folder' => [
+                'id',
+                'userId',
+                'parentId',
+                'name',
+            ],
+            'file' => [
+                'id',
+                'userId',
+                'folderId',
+                'serverName',
+                'origenName',
+                'mimeType',
+                'size',
+            ],
+            'share' => [
+                'id',
+                'userId',
+                'fileId',
+            ],
+        ]
+    ],
+    'mailSMTP' => [
+        'SMTPAuth' => true,
+        'host' => '',
+        'port' => '',
+        'user' => '',
+        'password' => '',
+        'from' => '',
+    ],
+    'resetPassword' => [
+        'expiresInMinutes' => 30,
+    ],
+];

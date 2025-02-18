@@ -6,6 +6,14 @@ class Config
 {
     private static array $config;
 
+    /**
+     * Получает значение конфигурации по заданному ключу.
+     *
+     * @param string|null $key Ключ конфигурации в формате "ключ1.ключ2.ключ3". Если null, возвращает весь массив конфигурации.
+     * @param mixed $default Значение по умолчанию, возвращаемое, если ключ не найден. Если не указано, выбрасывается исключение.
+     * @return mixed Значение конфигурации по заданному ключу или значение по умолчанию.
+     * @throws AppException Если ключ не найден и значение по умолчанию не указано.
+     */
     public static function getConfig(?string $key = null, mixed $default = null): mixed
     {
         if (!isset(self::$config)) {

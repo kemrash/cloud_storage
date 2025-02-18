@@ -12,6 +12,13 @@ class Db
     private static ?Db $instance = null;
     public static PDO $connection;
 
+    /**
+     * Конструктор класса Db.
+     * 
+     * Создает подключение к базе данных с использованием параметров конфигурации.
+     * 
+     * @throws PDOException Если не удается установить соединение с базой данных.
+     */
     private function __construct()
     {
         $dbConnection = Config::getConfig('database');
@@ -23,14 +30,35 @@ class Db
         self::$allowedDatabases = Config::getConfig('database.dbNames');
     }
 
-    private function __clone() {}
+    /**
+     * Метод клонирования объекта.
+     * 
+     * Этот метод закрыт для предотвращения клонирования экземпляров класса.
+     * 
+     * @return void
+     */
+    private function __clone(): void {}
 
-    public function __wakeup()
+    /**
+     * Метод __wakeup
+     *
+     * Вызывается при десериализации объекта. Запрещает восстановление экземпляра класса.
+     *
+     * @throws AppException Исключение, выбрасываемое при попытке восстановления экземпляра класса.
+     */
+    public function __wakeup(): void
     {
         throw new AppException(__CLASS__, "Нельзя восстановить экземпляр");
     }
 
-    public static function getConnection()
+    /**
+     * Возвращает экземпляр соединения с базой данных.
+     *
+     * Если экземпляр соединения еще не создан, создает новый.
+     *
+     * @return Db Экземпляр соединения с базой данных.
+     */
+    public static function getConnection(): Db
     {
         if (self::$instance === null) {
             self::$instance = new self;
@@ -39,6 +67,18 @@ class Db
         return self::$instance;
     }
 
+    /**
+     * Находит записи в базе данных по заданным столбцам и условиям.
+     *
+     * @param string $dbName Имя базы данных.
+     * @param string[] $columns Массив имен столбцов для выборки.
+     * @param string[] $allowedColumns Массив допустимых столбцов для выборки.
+     * @param array<string, mixed> $where Ассоциативный массив условий для выборки (по умолчанию пустой массив).
+     *
+     * @return array Массив найденных записей.
+     *
+     * @throws AppException Если нет допустимых столбцов для выбора или произошла ошибка при выполнении запроса.
+     */
     public static function findBy(string $dbName, array $columns, array $allowedColumns, array $where = []): array
     {
         self::validateDatabaseName($dbName);
@@ -74,6 +114,15 @@ class Db
         }
     }
 
+    /**
+     * Находит одну запись в базе данных по заданным параметрам.
+     *
+     * @param string $dbName Название базы данных.
+     * @param array<string, mixed> $params Ассоциативный массив параметров для поиска (ключ - название столбца, значение - значение для поиска).
+     * @param string[] $allowedColumns Массив допустимых названий столбцов для поиска.
+     * @return array<string, mixed>|null Возвращает найденную запись в виде ассоциативного массива или null, если запись не найдена.
+     * @throws AppException В случае ошибки выполнения запроса.
+     */
     public static function findOneBy(string $dbName, array $params, array $allowedColumns): ?array
     {
         self::validateDatabaseName($dbName);
@@ -95,6 +144,15 @@ class Db
         }
     }
 
+    /**
+     * Вставляет новую запись в указанную таблицу базы данных.
+     *
+     * @param string $dbName Название таблицы базы данных.
+     * @param array<string, mixed> $params Ассоциативный массив параметров, где ключи - это названия колонок, а значения - значения для вставки.
+     * @param string[] $allowedColumns Массив допустимых колонок для вставки.
+     * @return string Возвращает идентификатор последней вставленной записи.
+     * @throws InvalidArgumentException Если название базы данных некорректно.
+     */
     public static function insert(string $dbName, array $params, array $allowedColumns): string
     {
         self::validateDatabaseName($dbName);
@@ -124,6 +182,19 @@ class Db
         return $id;
     }
 
+    /**
+     * Обновляет одну запись в базе данных по заданным условиям.
+     *
+     * @param string $dbName Название базы данных.
+     * @param array<string, mixed> $paramsSet Ассоциативный массив с колонками и значениями для обновления.
+     * @param array<string, mixed> $paramsWhere Ассоциативный массив с колонками и значениями для условий WHERE.
+     * @param string[] $allowedColumns Массив допустимых колонок для обновления и условий.
+     *
+     * @return array<string, string> Возвращает массив с ключом 'status' и значением 'ok' в случае успешного выполнения, 
+     * либо массив с ошибкой в случае ошибки уникальности.
+     *
+     * @throws AppException В случае возникновения ошибки при выполнении запроса.
+     */
     public static function updateOneBy(string $dbName, array $paramsSet, array $paramsWhere, array $allowedColumns): array
     {
         self::validateDatabaseName($dbName);
@@ -186,6 +257,16 @@ class Db
         }
     }
 
+    /**
+     * Удаляет одну запись из базы данных по заданным условиям.
+     *
+     * @param string $dbName Название таблицы в базе данных.
+     * @param array<string, mixed> $paramsWhere Ассоциативный массив условий для удаления записи (ключ - название столбца, значение - значение для условия).
+     * @param string[] $allowedColumns Массив допустимых названий столбцов для условий.
+     *
+     * @throws AppException В случае ошибки выполнения запроса.
+     * @return void
+     */
     public static function deleteOneBy(string $dbName, array $paramsWhere, array $allowedColumns): void
     {
         self::validateDatabaseName($dbName);
@@ -203,6 +284,17 @@ class Db
         }
     }
 
+    /**
+     * Строит SQL-условие WHERE и массив привязок для подготовленного запроса.
+     *
+     * @param array<string, mixed> $params Ассоциативный массив параметров, где ключи - это имена колонок, а значения - значения для фильтрации.
+     * @param string[] $allowedColumns Массив допустимых имен колонок.
+     * @param string $separator Разделитель условий (по умолчанию ' AND ').
+     * 
+     * @return array{whereClause: string, bindings: array<string, mixed>} Ассоциативный массив с ключами 'whereClause' (строка условия WHERE) и 'bindings' (массив привязок для подготовленного запроса).
+     * 
+     * @throws AppException Если в $params передана недопустимая колонка.
+     */
     private static function buildWhereClauseAndBindings(array $params, array $allowedColumns, string $separator = ' AND '): array
     {
         $conditions = [];
@@ -222,6 +314,13 @@ class Db
         return ['whereClause' => $whereClause, 'bindings' => $bindings];
     }
 
+    /**
+     * Проверяет, является ли имя базы данных допустимым.
+     *
+     * @param string $dbName Имя базы данных для проверки.
+     * 
+     * @throws AppException Если имя базы данных недопустимо.
+     */
     private static function validateDatabaseName(string $dbName): void
     {
         if (!in_array($dbName, self::$allowedDatabases, true)) {

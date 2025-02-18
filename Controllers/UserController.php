@@ -16,6 +16,11 @@ class UserController
 {
     use UserTrait;
 
+    /**
+     * Возвращает список пользователей в формате JSON.
+     *
+     * @return JSONResponse Ответ с данными в формате JSON.
+     */
     public function list(): Response
     {
         $data = App::getService('userService')->getUsersList();
@@ -24,6 +29,12 @@ class UserController
         return $response;
     }
 
+    /**
+     * Получает данные пользователя по его идентификатору.
+     *
+     * @param array{0: string} $params Массив параметров, где первый элемент - идентификатор пользователя.
+     * @return Response Ответ в формате JSON с данными пользователя или ответ с ошибкой "Страница не найдена".
+     */
     public function get(array $params): Response
     {
         $data = App::getService('userService')->getUserById($params[0]);
@@ -35,6 +46,13 @@ class UserController
         return new JSONResponse($data);
     }
 
+    /**
+     * Обновляет данные пользователя.
+     *
+     * @param Request $request Объект запроса, содержащий данные для обновления.
+     * 
+     * @return Response Ответ, указывающий на результат операции.
+     */
     public function update(Request $request): Response
     {
         if (!isset($_SESSION['id']) || isset($request->getData()['PUT']['id']) && $_SESSION['id'] !== (int) $request->getData()['PUT']['id']) {
@@ -44,6 +62,19 @@ class UserController
         return App::getService('userService')->updateUser($request->getData()['PUT'], (int) $_SESSION['id'], $_SESSION['role']);
     }
 
+    /**
+     * Метод для авторизации пользователя.
+     *
+     * @param Request $request Объект запроса, содержащий данные для авторизации.
+     * 
+     * @return Response JSON-ответ с результатом авторизации.
+     * 
+     * Метод проверяет наличие и корректность обязательных полей 'email' и 'password' в запросе.
+     * Если одно из полей отсутствует или некорректно, возвращается ошибка с кодом 400.
+     * Если данные корректны, вызывается метод loginUser сервиса userService.
+     * В случае успешной авторизации, данные пользователя сохраняются в сессии.
+     * Если авторизация не удалась, возвращается ошибка с кодом 401.
+     */
     public function login(Request $request): Response
     {
         $email = null;
@@ -76,6 +107,11 @@ class UserController
         return new JSONResponse();
     }
 
+    /**
+     * Завершает текущую сессию пользователя и возвращает JSON-ответ.
+     *
+     * @return JSONResponse JSON-ответ, подтверждающий завершение сессии.
+     */
     public function logout(): Response
     {
         App::getService('session')->destroySession();
@@ -83,6 +119,12 @@ class UserController
         return new JSONResponse();
     }
 
+    /**
+     * Выполняет поиск пользователя по email.
+     *
+     * @param array{0: string} $params Массив параметров, где первый элемент - email пользователя.
+     * @return Response Возвращает объект ответа.
+     */
     public function searchByEmail(array $params): Response
     {
         if ($response = $this->checkUserAuthorization()) {

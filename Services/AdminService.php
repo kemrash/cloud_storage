@@ -16,11 +16,31 @@ use PDOException;
 
 class AdminService
 {
+    /**
+     * Возвращает список пользователей.
+     *
+     * @return array<int, array<string, mixed>> Массив пользователей, где каждый пользователь представлен в виде ассоциативного массива с ключами 'id', 'email', 'role', 'age', 'gender'.
+     */
     public function getUsersList(): array
     {
         return App::getService('userRepository')::findUsersBy('id', 'email', 'role', 'age', 'gender');
     }
 
+    /**
+     * Создает нового пользователя на основе переданных параметров.
+     *
+     * @param array{
+     *     email: string,
+     *     password: string,
+     *     role: string,
+     *     age?: int,
+     *     gender?: string
+     * } $params Массив параметров для создания пользователя. Обязательные ключи: email, password, role. Необязательные ключи: age, gender.
+     *
+     * @return Response JSON-ответ с данными созданного пользователя или сообщением об ошибке.
+     *
+     * @throws AppException В случае возникновения ошибки при создании пользователя.
+     */
     public function createUser(array $params): Response
     {
         $dbColumns = Config::getConfig('database.dbColumns.user');
@@ -108,6 +128,12 @@ class AdminService
         return new JSONResponse($data);
     }
 
+    /**
+     * Получает пользователя по его идентификатору.
+     *
+     * @param string $id Идентификатор пользователя.
+     * @return array{id: int, email: string, role: string, age: int, gender: string}|null Массив с данными пользователя или null, если пользователь не найден.
+     */
     public function getUserById(string $id): ?array
     {
         $user = App::getService('userRepository')::getUserBy(['id' => (int) $id]);
@@ -119,6 +145,13 @@ class AdminService
         return ['id' => $user->id, 'email' => $user->email, 'role' => $user->role, 'age' => $user->age, 'gender' => $user->gender];
     }
 
+    /**
+     * Удаляет пользователя по его идентификатору.
+     *
+     * @param string $id Идентификатор пользователя.
+     * @return Response JSON-ответ с результатом операции.
+     * @throws AppException В случае ошибки при удалении пользователя.
+     */
     public function deleteUserById(string $id): Response
     {
         if ((int) $id === Config::getConfig('app.idUserSystem')) {

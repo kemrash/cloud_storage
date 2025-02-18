@@ -23,6 +23,12 @@ use Models\File;
 
 class FileService
 {
+    /**
+     * Получает список файлов для пользователя по его идентификатору.
+     *
+     * @param int $id Идентификатор пользователя.
+     * @return Response JSON-ответ с данными о файлах.
+     */
     public function getFilesList(int $id): Response
     {
         $data = App::getService('fileRepository')::getFilesListUser($id);
@@ -30,6 +36,14 @@ class FileService
         return new JSONResponse($data);
     }
 
+    /**
+     * Получает файл пользователя по его идентификатору и идентификатору файла.
+     *
+     * @param int $userId Идентификатор пользователя.
+     * @param int $fileId Идентификатор файла.
+     * @return Response Возвращает JSON-ответ с данными файла, если доступ разрешен, 
+     *                  или ответ с ошибкой, если файл не найден или доступ запрещен.
+     */
     public function getUserFile(int $userId, int $fileId): Response
     {
         $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
@@ -55,6 +69,16 @@ class FileService
         ]);
     }
 
+    /**
+     * Добавляет чанки файла в указанную папку пользователя.
+     *
+     * @param int $userId Идентификатор пользователя.
+     * @param int $folderId Идентификатор папки.
+     * @param FlowRequest $request Объект запроса, содержащий информацию о чанках файла.
+     * @return Response Ответ с результатом операции.
+     * @throws Exception В случае ошибки при создании директорий или сохранении файла.
+     * @throws AppException В случае ошибки при удалении файла или другой ошибки приложения.
+     */
     public function addFileChunks(int $userId, int $folderId, FlowRequest $request): Response
     {
         try {
@@ -166,16 +190,38 @@ class FileService
         }
     }
 
+    /**
+     * Переименовывает файл пользователя.
+     *
+     * @param int $userId Идентификатор пользователя.
+     * @param int $fileId Идентификатор файла.
+     * @param string $name Новое имя файла.
+     * @return Response Ответ на запрос.
+     */
     public function renameUserFile(int $userId, int $fileId, string $name): Response
     {
         return $this->processUserFileWithTransaction($userId, $fileId, 'fileRepository', 'renameFile', [$fileId, $name]);
     }
 
+    /**
+     * Удаляет файл пользователя.
+     *
+     * @param int $userId Идентификатор пользователя.
+     * @param int $fileId Идентификатор файла.
+     * @return Response Ответ после выполнения операции.
+     */
     public function deleteUserFile(int $userId, int $fileId): Response
     {
         return $this->processUserFileWithTransaction($userId, $fileId, 'fileRepository', 'deleteFile', [$fileId], true);
     }
 
+    /**
+     * Получает список пользователей, с которыми был поделён файл.
+     *
+     * @param int $userId Идентификатор пользователя, запрашивающего список.
+     * @param int $fileId Идентификатор файла, для которого запрашивается список.
+     * @return Response Ответ в формате JSON, содержащий список пользователей, с которыми был поделён файл.
+     */
     public function getShareList(int $userId, int $fileId): Response
     {
         $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
@@ -189,6 +235,15 @@ class FileService
         return new JSONResponse($data);
     }
 
+    /**
+     * Добавляет доступ к файлу для другого пользователя.
+     *
+     * @param int $userId Идентификатор пользователя, который делится файлом.
+     * @param int $fileId Идентификатор файла, которым делятся.
+     * @param int $shareUserId Идентификатор пользователя, которому предоставляется доступ к файлу.
+     * @return Response Ответ на запрос.
+     * @throws AppException В случае возникновения ошибки при выполнении операции.
+     */
     public function addUserShareFile(int $userId, int $fileId, int $shareUserId): Response
     {
         $connection = Db::$connection;
@@ -238,6 +293,14 @@ class FileService
         }
     }
 
+    /**
+     * Удаляет общий доступ к файлу для указанного пользователя.
+     *
+     * @param int $userId Идентификатор пользователя, который владеет файлом.
+     * @param int $fileId Идентификатор файла, доступ к которому нужно удалить.
+     * @param int $shareUserId Идентификатор пользователя, у которого нужно удалить доступ к файлу.
+     * @return Response Возвращает JSON-ответ в случае успешного удаления или ответ с отказом в доступе.
+     */
     public function deleteUserShareFile(int $userId, int $fileId, int $shareUserId): Response
     {
         $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
@@ -251,6 +314,13 @@ class FileService
         return new JSONResponse();
     }
 
+    /**
+     * Загружает файл для указанного пользователя.
+     *
+     * @param int $userId Идентификатор пользователя, запрашивающего файл.
+     * @param string $serverName Имя файла на сервере.
+     * @return Response|null Возвращает ответ ошибки или прекращает работу скрипта после отправки файла.
+     */
     public function downloadFile(int $userId, string $serverName): ?Response
     {
         $file = App::getService('fileRepository')::getFileBy(['serverName' => $serverName]);
@@ -272,6 +342,20 @@ class FileService
         }
     }
 
+    /**
+     * Обрабатывает файл пользователя с использованием транзакции.
+     *
+     * @param int $userId Идентификатор пользователя.
+     * @param int $fileId Идентификатор файла.
+     * @param string $serviceName Название сервиса, который будет вызван.
+     * @param string $method Метод сервиса, который будет вызван.
+     * @param array<string, mixed> $params Параметры, передаваемые в метод сервиса.
+     * @param bool $isDeleteFile Флаг, указывающий, нужно ли удалить файл после обработки.
+     *
+     * @return Response Возвращает объект ответа.
+     *
+     * @throws AppException В случае возникновения ошибки в процессе выполнения.
+     */
     private function processUserFileWithTransaction(
         int $userId,
         int $fileId,
@@ -311,6 +395,16 @@ class FileService
         }
     }
 
+    /**
+     * Удаляет случайные части файлов в указанной папке.
+     *
+     * Этот метод с вероятностью 1% вызывает метод pruneChunks класса Uploader,
+     * который очищает части файлов в указанной папке.
+     *
+     * @param string $folder Путь к папке, в которой необходимо удалить части файлов.
+     *
+     * @return void
+     */
     private function randomClearFolderChunks(string $folder): void
     {
         if (1 == mt_rand(1, 100)) {

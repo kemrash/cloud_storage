@@ -12,6 +12,14 @@ use Models\ResetPassword;
 
 class ResetPasswordService
 {
+    /**
+     * Создает запись для сброса пароля и отправляет письмо с инструкциями.
+     *
+     * @param string $email Электронная почта пользователя, для которого создается запись сброса пароля.
+     * @param string $url URL для сброса пароля, который будет отправлен пользователю.
+     * @param int $expiresInMinutes Время в минутах, через которое ссылка для сброса пароля истечет. По умолчанию 30 минут.
+     * @return Response JSON-ответ с результатом операции.
+     */
     public function createdResetPasswordAndSendEmail(string $email, string $url, int $expiresInMinutes = 30): Response
     {
         $dateTime = new DateTime();
@@ -44,6 +52,14 @@ class ResetPasswordService
         return new JSONResponse();
     }
 
+    /**
+     * Сбрасывает пароль пользователя.
+     *
+     * @param int $id Идентификатор пользователя.
+     * @param string $token Токен для сброса пароля.
+     * @param string $password Новый пароль пользователя.
+     * @return Response Ответ в формате JSON.
+     */
     public function resetPassword(int $id, string $token, string $password): Response
     {
         $dateTime = new DateTime();

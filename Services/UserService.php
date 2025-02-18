@@ -12,11 +12,23 @@ use Exception;
 
 class UserService
 {
+    /**
+     * Возвращает список пользователей.
+     *
+     * @return array<int, array<string, string|int>> Массив пользователей, 
+     * где каждый пользователь представлен в виде ассоциативного массива с ключами 'id', 'role', 'age', 'gender'.
+     */
     public function getUsersList(): array
     {
         return App::getService('userRepository')::findUsersBy('id', 'role', 'age', 'gender');
     }
 
+    /**
+     * Получает пользователя по его идентификатору.
+     *
+     * @param string $id Идентификатор пользователя.
+     * @return array<string, string|int>|null Ассоциативный массив с данными пользователя (id, role, age, gender) или null, если пользователь не найден.
+     */
     public function getUserById(string $id): ?array
     {
         $user = App::getService('userRepository')::getUserBy(['id' => (int) $id]);
@@ -28,6 +40,14 @@ class UserService
         return ['id' => $user->id, 'role' => $user->role, 'age' => $user->age, 'gender' => $user->gender];
     }
 
+    /**
+     * Обновляет данные пользователя.
+     *
+     * @param array<string, string|int> $params Ассоциативный массив параметров для обновления пользователя.
+     * @param int $id Идентификатор пользователя.
+     * @param string $role Роль текущего пользователя, выполняющего обновление.
+     * @return Response Ответ с результатом обновления.
+     */
     public function updateUser(array $params, int $id, string $role): Response
     {
         $errors = [];
@@ -139,6 +159,14 @@ class UserService
         return new JSONResponse($data);
     }
 
+    /**
+     * Авторизует пользователя по указанным email и паролю.
+     *
+     * @param string $email Электронная почта пользователя.
+     * @param string $password Пароль пользователя.
+     *
+     * @return void
+     */
     public function loginUser(string $email, string $password): void
     {
         $user = App::getService('userRepository')::getUserBy(['email' => $email]);
@@ -154,6 +182,12 @@ class UserService
         }
     }
 
+    /**
+     * Ищет пользователя по адресу электронной почты.
+     *
+     * @param string $email Адрес электронной почты пользователя.
+     * @return Response Возвращает JSON-ответ с идентификатором пользователя или ответ о не нахождении страницы.
+     */
     public function searchUserByEmail(string $email): Response
     {
         $user = App::getService('userRepository')::getUserBy(['email' => $email]);

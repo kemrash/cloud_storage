@@ -11,6 +11,25 @@ use PDOException;
 
 class InstallService
 {
+    /**
+     * Устанавливает приложение с заданными данными конфигурации.
+     *
+     * @param array{
+     *     dbHost: string,
+     *     dbName: string,
+     *     dbUser: string,
+     *     dbPassword: string,
+     *     smtpHost: string,
+     *     smtpPort: int,
+     *     smtpUser: string,
+     *     smtpPassword: string,
+     *     smtpFrom: string,
+     *     adminUser: string,
+     *     adminPassword: string
+     * } $data Массив данных для установки, включающий параметры базы данных, SMTP и учетные данные администратора.
+     *
+     * @return Response Возвращает JSON-ответ с результатом установки или её ошибки.
+     */
     public function install(array $data): Response
     {
         $pathConfig = './config.php';

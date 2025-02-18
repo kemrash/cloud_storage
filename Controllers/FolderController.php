@@ -15,6 +15,11 @@ class FolderController
     use UserTrait;
     use PageTrait;
 
+    /**
+     * Возвращает список папок пользователя.
+     *
+     * @return Response Ответ с данными о папках пользователя.
+     */
     public function list(): Response
     {
         if ($response = $this->checkUserAuthorization()) {
@@ -24,6 +29,12 @@ class FolderController
         return App::getService('folderService')->getUserFoldersList((int) $_SESSION['id']);
     }
 
+    /**
+     * Добавляет новую папку для пользователя.
+     *
+     * @param Request $request HTTP-запрос, содержащий данные для создания папки.
+     * @return Response HTTP-ответ, содержащий результат операции.
+     */
     public function add(Request $request): Response
     {
         if ($response = $this->checkUserAuthorization()) {
@@ -41,6 +52,12 @@ class FolderController
         return App::getService('folderService')->createUserFolder($userId, $parentId, $name);
     }
 
+    /**
+     * Переименовывает папку пользователя.
+     *
+     * @param Request $request HTTP-запрос, содержащий данные для переименования папки.
+     * @return Response HTTP-ответ с результатом операции.
+     */
     public function rename(Request $request): Response
     {
         if ($response = $this->checkUserAuthorization()) {
@@ -58,6 +75,12 @@ class FolderController
         return App::getService('folderService')->renameUserFolder($userId, $id, $name);
     }
 
+    /**
+     * Получает информацию о папке пользователя.
+     *
+     * @param array<string> $params Массив параметров, где первый элемент - идентификатор папки.
+     * @return Response Ответ с информацией о папке или сообщение об ошибке.
+     */
     public function get(array $params): Response
     {
         if ($response = $this->checkUserAuthorization()) {
@@ -74,6 +97,12 @@ class FolderController
         return App::getService('folderService')->getUserFolder($userId, $folderId);
     }
 
+    /**
+     * Удаляет папку пользователя.
+     *
+     * @param array<string> $params Массив параметров, где первый элемент - ID папки.
+     * @return Response Ответ сервера.
+     */
     public function remove(array $params): Response
     {
         if ($response = $this->checkUserAuthorization()) {
@@ -90,6 +119,15 @@ class FolderController
         return App::getService('folderService')->removeUserFolder($userId, $folderId);
     }
 
+    /**
+     * Валидирует данные запроса и возвращает массив с данными или объект ответа с ошибкой.
+     *
+     * @param Request $request Объект запроса.
+     * @param string $httpMethod HTTP метод запроса (GET, POST и т.д.).
+     * @param string $idKey Ключ идентификатора в данных запроса.
+     * 
+     * @return array{int, int, string}|Response Возвращает массив с userId, id и name или объект ответа с ошибкой.
+     */
     private function getValidatedData(Request $request, string $httpMethod, string $idKey): array|Response
     {
         $data = $request->getData()[strtoupper($httpMethod)] ?? [];

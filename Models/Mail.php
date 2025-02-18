@@ -10,6 +10,15 @@ use PHPMailer\PHPMailer\PHPMailer;
 
 class Mail
 {
+    /**
+     * Отправляет электронное письмо на указанный адрес.
+     *
+     * @param string $address Адрес электронной почты получателя.
+     * @param string $title Тема письма.
+     * @param string $message Текст сообщения.
+     *
+     * @throws AppException В случае ошибки при отправке письма.
+     */
     public function sendEmail(string $address, string $title, string $message): void
     {
         $mail = new PHPMailer();

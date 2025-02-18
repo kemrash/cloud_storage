@@ -11,6 +11,16 @@ use Core\Response\JSONResponse;
 
 class ResetPasswordController
 {
+    /**
+     * Подготавливает сброс пароля.
+     *
+     * @param Request $request Объект запроса, содержащий данные запроса.
+     * 
+     * @return Response JSON-ответ с результатом операции.
+     *
+     * @throws InvalidArgumentException Если email не передан или некорректен.
+     * @throws RuntimeException Если вошедший пользователь пытается сбросить пароль.
+     */
     public function preparationResetPassword(Request $request): Response
     {
         if (isset($_SESSION['id'])) {
@@ -34,6 +44,19 @@ class ResetPasswordController
         return App::getService('resetPasswordService')->createdResetPasswordAndSendEmail($email, $url, Config::getConfig('resetPassword.expiresInMinutes'));
     }
 
+    /**
+     * Сбрасывает пароль пользователя.
+     *
+     * @param Request $request Объект запроса, содержащий данные для сброса пароля.
+     *                         Ожидается, что в массиве GET будут присутствовать ключи:
+     *                         - 'id' (int): Идентификатор пользователя.
+     *                         - 'token' (string): Токен для сброса пароля.
+     *                         В массиве PUT должен присутствовать ключ:
+     *                         - 'password' (string): Новый пароль пользователя.
+     *
+     * @return Response JSON-ответ с результатом операции.
+     *                  В случае ошибки возвращает JSON-ответ с описанием ошибки и соответствующим HTTP статусом.
+     */
     public function resetPassword(Request $request): Response
     {
         if (isset($_SESSION['id'])) {

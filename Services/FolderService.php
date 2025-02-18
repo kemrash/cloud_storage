@@ -15,6 +15,12 @@ use PDOException;
 
 class FolderService
 {
+    /**
+     * Возвращает список папок пользователя.
+     *
+     * @param int $userId Идентификатор пользователя.
+     * @return Response JSON-ответ с данными о папках пользователя.
+     */
     public function getUserFoldersList(int $userId): Response
     {
         $data = App::getService('folderRepository')::getUserFoldersList($userId);
@@ -22,6 +28,15 @@ class FolderService
         return new JSONResponse($data);
     }
 
+    /**
+     * Создает папку пользователя.
+     *
+     * @param int $userId Идентификатор пользователя.
+     * @param int $parentId Идентификатор родительской папки. Не может быть 0.
+     * @param string $name Название папки.
+     * @return Response JSON-ответ с результатом операции.
+     * @throws AppException В случае возникновения ошибки при добавлении папки.
+     */
     public function createUserFolder(int $userId, int $parentId, string $name): Response
     {
         if ($parentId === 0) {
@@ -53,6 +68,14 @@ class FolderService
         }
     }
 
+    /**
+     * Переименовывает папку пользователя.
+     *
+     * @param int $userId Идентификатор пользователя.
+     * @param int $id Идентификатор папки.
+     * @param string $name Новое имя папки.
+     * @return Response Возвращает объект ответа, который может быть либо JSONResponse с данными, либо PageNotFoundResponse, если папка не найдена.
+     */
     public function renameUserFolder(int $userId, int $id, string $name): Response
     {
         $data = App::getService('folderRepository')::renameFolder($userId, $id, $name);
@@ -60,6 +83,13 @@ class FolderService
         return isset($data['code']) && $data['code'] === 404 ? new PageNotFoundResponse() : new JSONResponse($data);
     }
 
+    /**
+     * Получает папку пользователя по идентификатору пользователя и идентификатору папки.
+     *
+     * @param int $userId Идентификатор пользователя.
+     * @param int $folderId Идентификатор папки.
+     * @return Response Возвращает JSON-ответ с данными папки или ответ о не нахождении страницы.
+     */
     public function getUserFolder(int $userId, int $folderId): Response
     {
         $folder = App::getService('folderRepository')::getFolderBy($userId, $folderId);
@@ -76,6 +106,13 @@ class FolderService
         ]);
     }
 
+    /**
+     * Удаляет папку пользователя и все файлы в ней.
+     *
+     * @param int $userId Идентификатор пользователя.
+     * @param int $folderId Идентификатор папки.
+     * @return Response Ответ с результатом выполнения операции.
+     */
     public function removeUserFolder(int $userId, int $folderId): Response
     {
         $folder = App::getService('folderRepository')::getFolderBy($userId, $folderId);
@@ -96,6 +133,14 @@ class FolderService
         return new JSONResponse();
     }
 
+    /**
+     * Удаляет папку и возвращает список файлов в ней.
+     *
+     * @param int $folderId Идентификатор папки, которую необходимо удалить.
+     * @param bool $isTransaction Флаг, указывающий, является ли операция частью внешней транзакции. По умолчанию false.
+     * @return array<int, array<string, string|int>> Список файлов в удаленной папке, где каждый элемент массива представляет собой ассоциативный массив с данными файла.
+     * @throws AppException В случае ошибки при выполнении операции удаления.
+     */
     public function deleteFolderAndReturnFilesList(int $folderId, bool $isTransaction = false): array
     {
         $filesList = [];

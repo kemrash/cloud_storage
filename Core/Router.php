@@ -10,11 +10,30 @@ class Router
 {
     private array $routes;
 
-    function __construct(array $routes)
+    /**
+     * Конструктор Router.
+     * 
+     * @param array<string, array<string, array{string, string}>> $routes Ассоциативный массив маршрутов, где ключи - это маршруты,
+     *                                                            а значения - массивы с именами контроллеров и методами.
+     */
+    public function __construct(array $routes)
     {
         $this->routes = $routes;
     }
 
+    /**
+     * Обрабатывает входящий HTTP-запрос и возвращает соответствующий объект Response.
+     * 
+     * @param Request $request Объект запроса, содержащий маршрут и метод HTTP.
+     * 
+     * @return Response|null Возвращает объект Response, если маршрут найден, 
+     *                       либо null в случае ошибки.
+     * 
+     * @throws AppException Если указанный контроллер или его метод не существует.
+     * 
+     * В зависимости от наличия динамических параметров в маршруте, 
+     * метод контроллера вызывается с дополнительными параметрами или без них.
+     */
     public function processRequest(Request $request): ?Response
     {
         $params = [];
@@ -41,9 +60,7 @@ class Router
             !is_array($this->routes[$route][$method]) ||
             count($this->routes[$route][$method]) !== 2
         ) {
-            $response = new PageNotFoundResponse();
-
-            return $response;
+            return new PageNotFoundResponse();
         }
 
         [$controllerClass, $methodName] = $this->routes[$route][$method];

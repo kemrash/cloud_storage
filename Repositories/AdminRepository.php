@@ -9,6 +9,17 @@ use Models\Folder;
 
 class AdminRepository extends Db
 {
+    /**
+     * Создает нового пользователя и его домашнюю папку.
+     *
+     * @param array<string, mixed> $params Ассоциативный массив параметров для создания пользователя.
+     * 
+     * @return array{
+     *     status: string,
+     *     id: int,
+     *     folderId: int
+     * } Возвращает массив с результатом операции, включающий статус, ID пользователя и ID папки.
+     */
     public static function createUser(array $params): array
     {
         $connection = Db::$connection;
@@ -28,6 +39,13 @@ class AdminRepository extends Db
         ];
     }
 
+    /**
+     * Удаляет пользователя по заданным параметрам.
+     *
+     * @param array<string, mixed> $params Ассоциативный массив параметров для удаления пользователя.
+     *
+     * @return void
+     */
     public static function deleteUserBy(array $params): void
     {
         parent::deleteOneBy('user', $params, Config::getConfig('database.dbColumns.user'));

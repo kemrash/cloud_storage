@@ -12,7 +12,18 @@ class File
     private string $mimeType;
     private int $size;
 
-    public function __construct(int $userId, int $folderId, string $serverName, string $origenName, string $mimeType, int $size, int $id = null)
+    /**
+     * Конструктор класса File.
+     *
+     * @param int $userId Идентификатор пользователя.
+     * @param int $folderId Идентификатор папки.
+     * @param string $serverName Имя файла на сервере.
+     * @param string $origenName Оригинальное имя файла.
+     * @param string $mimeType MIME-тип файла.
+     * @param int $size Размер файла в байтах.
+     * @param int|null $id Идентификатор файла (необязательный параметр).
+     */
+    public function __construct(int $userId, int $folderId, string $serverName, string $origenName, string $mimeType, int $size, ?int $id = null)
     {
         $this->id = $id;
         $this->userId = $userId;
@@ -23,7 +34,13 @@ class File
         $this->size = $size;
     }
 
-    public function __get($name)
+    /**
+     * Магический метод для получения значения свойства объекта.
+     *
+     * @param string $name Имя свойства, значение которого нужно получить.
+     * @return string|int|null Значение свойства, если оно существует, или null, если свойство не найдено.
+     */
+    public function __get($name): string|int|null
     {
         if (isset($this->$name)) {
             return $this->$name;

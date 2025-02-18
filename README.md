@@ -175,8 +175,17 @@ curl -X GET "http://localhost/files/get/2"
 
 ```bash
 curl -X POST "http://localhost/files/add" \
-  -F "file=@/path/to/your/file" \
-  -F "folderId=2"
+  -F "flowChunkNumber=1" \
+  -F "flowChunkSize=1048576" \
+  -F "flowCurrentChunkSize=1048576" \
+  -F "flowTotalSize=3145728" \
+  -F "flowIdentifier=examplefile-1587390012" \
+  -F "flowFilename=example.txt" \
+  -F "flowRelativePath=example.txt" \
+  -F "flowTotalChunks=3" \
+  -F "folderId=2" \
+  -F "file=@/path/to/your/chunk1"
+
 ```
 
 #### 17. Переименование файла

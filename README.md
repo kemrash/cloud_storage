@@ -269,3 +269,7 @@ curl -X POST "http://localhost/install" \
 ```
 
 Так же пример запросов в качестве коллекции для Postman. По пути `Postman/cloud_storage.postman_collection.json`
+
+### Технические требования
+
+Проект запускается в среде XAMPP + PHP 7.4 и выше + MySQL 5.7 и выше

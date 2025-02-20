@@ -26,11 +26,16 @@
    ```
 4. **Настройка веб-сервера:**  
    Настройте ваш веб-сервер (например, XAMPP) для обслуживания каталога проекта.
-5. **Передача параметров настройки базы данных и SMTP-сервера:**  
-   Передайте действующие параметры настройки базы данных и SMTP-сервера, а также желаемые данные администратора, в эндпоинт:
-   ```http
-   POST /install
-   ```
+5. **Настройка базы данных и SMTP-сервера**
+   Вы можете задать параметры базы данных, SMTP-сервера и учетные данные администратора двумя способами:
+
+- **Через веб-интерфейс:**  
+  Перейдите на главную страницу проекта, откройте раздел "Установка" и заполните форму с актуальными параметрами.
+- **Через API:**  
+  Отправьте HTTP `POST`-запрос на эндпоинт:
+  ```http
+  POST /install
+  ```
 
 ## Использование
 
@@ -268,7 +273,7 @@ curl -X POST "http://localhost/install" \
   -d "dbHost=localhost&dbName=cloud_storage&dbUser=root&dbPassword=&smtpHost=mail.host.ru&smtpPort=465&smtpUser=example@mail.ru&smtpPassword=&smtpFrom=example@mail.ru&adminUser=example@mail.ru&adminPassword=12345"
 ```
 
-Так же пример запросов в качестве коллекции для Postman. По пути `Postman/cloud_storage.postman_collection.json`
+Так же пример запросов в качестве коллекции для Postman. По пути `Templates/files/cloud_storage.postman_collection.json`
 
 ### Технические требования
 

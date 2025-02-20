@@ -16,16 +16,6 @@ class IndexController
      */
     public function getIndexHtml(): Response
     {
-        // if (!file_exists('./config.php')) {
-        //     return new Response(file_get_contents('./Templates/install.html'));
-        // }
-
-        // if (!isset($_SESSION['id'])) {
-        //     return new Response(file_get_contents('./Templates/index.html'));
-        // }
-
-        // return new Response(file_get_contents('./Templates/file.html'));
-
         return new Response(file_get_contents('./Templates/index.html'));
     }
 }

@@ -1,9 +1,7 @@
 RewriteEngine On
 
 # Исключаем директории Templates/js и Templates/img из перенаправления
-RewriteCond %{REQUEST_URI} !^/Templates/js/ [NC]
-RewriteCond %{REQUEST_URI} !^/Templates/img/ [NC]
-RewriteCond %{REQUEST_URI} !^/Templates/css/ [NC]
+RewriteCond %{REQUEST_URI} !^/Templates/files/ [NC]
 RewriteCond %{REQUEST_URI} !^/Templates/assets/ [NC]
 
 # Все запросы (даже если файл существует) перенаправляем на index.php

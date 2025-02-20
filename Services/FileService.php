@@ -93,6 +93,14 @@ class FileService
                 return new AccessDeniedResponse();
             }
 
+            $origenFileName = $request->getFileName();
+
+            $file = App::getService('fileRepository')::getFileBy(['folderId' => $folderId, 'origenName' => $origenFileName]);
+
+            if ($file !== null) {
+                return new JSONResponse(Helper::showError('Файл с таким именем уже существует в этой папке'), 400);
+            }
+
             $config = new FlowConfig();
             $chunksTempFolder = './Chunks_temp_folder';
             $uploadFolder = Config::getConfig('app.uploadFile.folderFileStorage');
@@ -126,7 +134,6 @@ class FileService
                 }
 
                 $maxAttempts = 2;
-                $origenFileName = $request->getFileName();
                 $fileSize = filesize($uploadPath);
                 $fileMimeType = mime_content_type($uploadPath);
 

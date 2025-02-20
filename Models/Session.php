@@ -23,6 +23,7 @@ class Session
         session_name(self::SESSION_NAME);
         session_set_cookie_params([
             'httponly' => true,
+            'domain' => 'localhost',
         ]);
         session_start();
 

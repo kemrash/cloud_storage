@@ -1,13 +1,11 @@
 RewriteEngine On
 
-# Исключаем директории Templates/js и Templates/img из перенаправления
-RewriteCond %{REQUEST_URI} !^/Templates/files/ [NC]
 RewriteCond %{REQUEST_URI} !^/Templates/assets/ [NC]
+RewriteCond %{REQUEST_URI} !^/Templates/img/ [NC]
+RewriteCond %{REQUEST_URI} !^/Templates/files/ [NC]
 
-# Все запросы (даже если файл существует) перенаправляем на index.php
 RewriteRule ^ index.php [QSA,L]
 
-# Закрываем доступ к config.php
 <Files "config.php">
     Require all denied
 </Files>

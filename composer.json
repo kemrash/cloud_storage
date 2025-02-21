@@ -1,0 +1,7 @@
+{
+    "require": {
+        "phpmailer/phpmailer": "^6.9",
+        "ramsey/uuid": "^4.7",
+        "flowjs/flow-php-server": "^2.0"
+    }
+}

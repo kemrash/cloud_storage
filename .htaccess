@@ -1,0 +1,11 @@
+RewriteEngine On
+
+RewriteCond %{REQUEST_URI} !^/Templates/assets/ [NC]
+RewriteCond %{REQUEST_URI} !^/Templates/img/ [NC]
+RewriteCond %{REQUEST_URI} !^/Templates/files/ [NC]
+
+RewriteRule ^ index.php [QSA,L]
+
+<Files "config.php">
+    Require all denied
+</Files>

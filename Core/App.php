@@ -2,6 +2,12 @@
 
 namespace Core;
 
+use Core\Db;
+use Core\Helper;
+use Core\Request;
+use Core\Response\PageNotFoundResponse;
+use Core\Router;
+
 class App
 {
     private const FOLDERS = ['Repositories', 'Services', 'Models'];
@@ -65,5 +71,29 @@ class App
     public static function issetClass(string $name): bool
     {
         return isset(self::$data[$name]);
+    }
+
+    public static function run(): void
+    {
+        set_exception_handler([Helper::class, 'exceptionHandler']);
+
+        $request = new Request();
+
+        if (file_exists('./config.php')) {
+            Db::getConnection();
+        }
+
+        self::getService('session')->startSession();
+
+        $router = new Router();
+        $response = $router->processRequest($request);
+
+        if ($response === null) {
+            $response = new PageNotFoundResponse();
+        }
+
+        http_response_code($response->getStatusCode());
+        header($response->getHeader());
+        echo $response->getData();
     }
 }

@@ -7,8 +7,8 @@ use Core\Helper;
 use Core\Request;
 use Core\Response;
 use Core\Response\JSONResponse;
-use Traits\PageTrait;
-use Traits\UserTrait;
+use traits\PageTrait;
+use traits\UserTrait;
 
 class FolderController
 {

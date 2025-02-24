@@ -10,8 +10,8 @@ use Core\Response;
 use Core\Response\JSONResponse;
 use Core\Response\PageNotFoundResponse;
 use Flow\Request as FlowRequest;
-use Traits\PageTrait;
-use Traits\UserTrait;
+use traits\PageTrait;
+use traits\UserTrait;
 
 class FilesController
 {

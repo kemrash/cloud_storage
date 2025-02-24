@@ -11,7 +11,7 @@ use Core\Response\AccessDeniedResponse;
 use Core\Response\JSONResponse;
 use Core\Response\PageNotFoundResponse;
 use Models\User;
-use Traits\UserTrait;
+use traits\UserTrait;
 
 class UserController
 {

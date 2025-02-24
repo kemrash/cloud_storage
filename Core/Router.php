@@ -8,18 +8,97 @@ use Core\Response\PageNotFoundResponse;
 
 class Router
 {
-    private array $routes;
-
-    /**
-     * Конструктор Router.
-     * 
-     * @param array<string, array<string, array{string, string}>> $routes Ассоциативный массив маршрутов, где ключи - это маршруты,
-     *                                                            а значения - массивы с именами контроллеров и методами.
-     */
-    public function __construct(array $routes)
-    {
-        $this->routes = $routes;
-    }
+    private const ROUTES = [
+        '/users/list' => [
+            'GET' => ['UserController', 'list'],
+        ],
+        '/users/get/{id}' => [
+            'GET' => ['UserController', 'get'],
+        ],
+        '/users/update' => [
+            'PUT' => ['UserController', 'update'],
+        ],
+        '/users/login' => [
+            'POST' => ['UserController', 'login'],
+        ],
+        '/users/logout' => [
+            'GET' => ['UserController', 'logout'],
+        ],
+        '/users/reset_password' => [
+            'GET' => ['ResetPasswordController', 'preparationResetPassword'],
+            'PATCH' => ['ResetPasswordController', 'resetPassword'],
+        ],
+        '/users/search/{email}' => [
+            'GET' => ['UserController', 'searchByEmail'],
+        ],
+        '/admin/users/list' => [
+            'GET' => ['AdminController', 'list'],
+        ],
+        '/admin/users/create' => [
+            'POST' => ['AdminController', 'create'],
+        ],
+        '/admin/users/get/{id}' => [
+            'GET' => ['AdminController', 'get'],
+        ],
+        '/admin/users/delete/{id}' => [
+            'DELETE' => ['AdminController', 'delete'],
+        ],
+        '/admin/users/update/{id}' => [
+            'PUT' => ['AdminController', 'update'],
+        ],
+        '/files/list' => [
+            'GET' => ['FilesController', 'list'],
+        ],
+        '/files/get/{id}' => [
+            'GET' => ['FilesController', 'getFile'],
+        ],
+        '/files/add' => [
+            'POST' => ['FilesController', 'add'],
+        ],
+        '/files/rename' => [
+            'PATCH' => ['FilesController', 'rename'],
+        ],
+        '/files/remove/{id}' => [
+            'DELETE' => ['FilesController', 'remove'],
+        ],
+        '/files/share/{id}' => [
+            'GET' => ['FilesController', 'shareList'],
+        ],
+        '/files/share/{id}/{id}' => [
+            'PUT' => ['FilesController', 'addUserShareFile'],
+            'DELETE' => ['FilesController', 'deleteUserShareFile'],
+        ],
+        '/files/download' => [
+            'GET' => ['FilesController', 'download'],
+        ],
+        '/directories/list' => [
+            'GET' => ['FolderController', 'list'],
+        ],
+        '/directories/add' => [
+            'POST' => ['FolderController', 'add'],
+        ],
+        '/directories/rename' => [
+            'PATCH' => ['FolderController', 'rename'],
+        ],
+        '/directories/get/{id}' => [
+            'GET' => ['FolderController', 'get'],
+        ],
+        '/directories/delete/{id}' => [
+            'DELETE' => ['FolderController', 'remove'],
+        ],
+        '/install' => [
+            'POST' => ['InstallController', 'install'],
+        ],
+        '/' => [
+            'GET' => ['IndexController', 'getIndexHtml'],
+        ],
+        '/upload' => [
+            'GET' => ['IndexController', 'getIndexHtml'],
+        ],
+        '/setup' => [
+            'GET' => ['IndexController', 'getIndexHtml'],
+        ],
+    ];
 
     /**
      * Обрабатывает входящий HTTP-запрос и возвращает соответствующий объект Response.
@@ -56,14 +135,14 @@ class Router
         $route = implode('/', $unitsRoute);
 
         if (
-            !isset($this->routes[$route][$method]) ||
-            !is_array($this->routes[$route][$method]) ||
-            count($this->routes[$route][$method]) !== 2
+            !isset(self::ROUTES[$route][$method]) ||
+            !is_array(self::ROUTES[$route][$method]) ||
+            count(self::ROUTES[$route][$method]) !== 2
         ) {
             return new PageNotFoundResponse();
         }
 
-        [$controllerClass, $methodName] = $this->routes[$route][$method];
+        [$controllerClass, $methodName] = self::ROUTES[$route][$method];
 
         $controllerClass = 'Controllers\\' . $controllerClass;
 

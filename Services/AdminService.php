@@ -9,7 +9,6 @@ use Core\Db;
 use Core\FileStorage;
 use Core\Helper;
 use Core\Response;
-use Core\Response\JSONResponse;
 use Exception;
 use Models\User;
 use PDOException;
@@ -106,7 +105,7 @@ class AdminService
         }
 
         if (count($errors) > 0) {
-            return new JSONResponse(Helper::showError(implode(' ', $errors)));
+            return new Response('json', Helper::showError(implode(' ', $errors)));
         }
 
         try {
@@ -119,13 +118,13 @@ class AdminService
             }
 
             if ($e->getCode() === '23000') {
-                return new JSONResponse(Helper::showError('Пользователь с таким email уже существует'));
+                return new Response('json', Helper::showError('Пользователь с таким email уже существует'));
             }
 
             throw new AppException(__CLASS__, $e->getMessage());
         }
 
-        return new JSONResponse($data);
+        return new Response('json', $data);
     }
 
     /**
@@ -155,7 +154,7 @@ class AdminService
     public function deleteUserById(string $id): Response
     {
         if ((int) $id === Config::getConfig('app.idUserSystem')) {
-            return new JSONResponse(Helper::showError('Нельзя удалять системного пользователя'));
+            return new Response('json', Helper::showError('Нельзя удалять системного пользователя'));
         }
 
         $filesList = [];
@@ -188,6 +187,6 @@ class AdminService
             $fileStorage->deleteFiles($filesList);
         }
 
-        return new JSONResponse();
+        return new Response();
     }
 }

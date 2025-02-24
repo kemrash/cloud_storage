@@ -6,8 +6,6 @@ use Core\App;
 use Core\Config;
 use Core\Helper;
 use Core\Response;
-use Core\Response\JSONResponse;
-use Core\Response\PageNotFoundResponse;
 use Exception;
 
 class UserService
@@ -55,7 +53,7 @@ class UserService
         $user = App::getService('userRepository')::getUserBy(['id' => (int) $id]);
 
         if ($user === null) {
-            return new PageNotFoundResponse();
+            return new Response('renderError', 'Страница не найдена', 404);
         }
 
         foreach (Config::getConfig('database.dbColumns.user') as $parameter) {
@@ -141,22 +139,22 @@ class UserService
         }
 
         if (count($errors) > 0) {
-            return new JSONResponse(Helper::showError(implode(' ', $errors)), 400);
+            return new Response('json', Helper::showError(implode(' ', $errors)), 400);
         }
 
         $data = App::getService('userRepository')::updateUser($user);
 
         if (isset($data['code']) && $data['code'] === '23000') {
-            return new JSONResponse(Helper::showError('Пользователь с таким email уже существует'), 400);
+            return new Response('json', Helper::showError('Пользователь с таким email уже существует'), 400);
         }
 
         if ($data['status'] === 'error') {
-            return new JSONResponse(Helper::showError('Ошибка обновления пользователя'), 400);
+            return new Response('json', Helper::showError('Ошибка обновления пользователя'), 400);
         }
 
         $_SESSION['role'] = $user->role;
 
-        return new JSONResponse($data);
+        return new Response('json', $data);
     }
 
     /**
@@ -193,9 +191,9 @@ class UserService
         $user = App::getService('userRepository')::getUserBy(['email' => $email]);
 
         if ($user === null) {
-            return new PageNotFoundResponse();
+            return new Response('renderError', 'Страница не найдена', 404);
         }
 
-        return new JSONResponse(['id' => $user->id]);
+        return new Response('json', ['id' => $user->id]);
     }
 }

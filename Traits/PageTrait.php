@@ -3,7 +3,6 @@
 namespace traits;
 
 use Core\Response;
-use Core\Response\PageNotFoundResponse;
 
 trait PageTrait
 {
@@ -16,7 +15,7 @@ trait PageTrait
     private function checkNotFoundPage(mixed $id): ?Response
     {
         if (!isset($id) || !ctype_digit($id)) {
-            return new PageNotFoundResponse();
+            return new Response('renderError', 'Доступ запрещен', 403);
         }
 
         return null;

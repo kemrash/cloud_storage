@@ -1,10 +1,7 @@
 <?php
 
-namespace Models;
+namespace Core;
 
-use Core\AppException;
-use Core\Helper;
-use Core\Config;
 use Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 

@@ -1,8 +1,6 @@
 <?php
 
-namespace Models;
-
-use Core\App;
+namespace Core;
 
 class Session
 {

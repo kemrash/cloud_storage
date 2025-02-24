@@ -7,6 +7,7 @@ use Core\Config;
 use Core\Helper;
 use Core\Request;
 use Core\Response;
+use Core\Session;
 use Models\User;
 use traits\UserTrait;
 
@@ -112,7 +113,8 @@ class UserController
      */
     public function logout(): Response
     {
-        App::getService('session')->destroySession();
+        $session = new Session();
+        $session->destroySession();
 
         return new Response();
     }

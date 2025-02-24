@@ -2,12 +2,6 @@
 
 namespace Core;
 
-use Core\Db;
-use Core\Helper;
-use Core\Request;
-use Core\Response\PageNotFoundResponse;
-use Core\Router;
-
 class App
 {
     private const FOLDERS = ['Repositories', 'Services', 'Models'];
@@ -98,7 +92,7 @@ class App
         $response = $router->processRequest($request);
 
         if ($response === null) {
-            $response = new PageNotFoundResponse();
+            $response = new Response('renderError', 'Страница не найдена', 404);
         }
 
         http_response_code($response->getStatusCode());

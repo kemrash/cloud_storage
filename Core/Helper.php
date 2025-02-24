@@ -2,7 +2,6 @@
 
 namespace Core;
 
-use Core\Response\ServerErrorResponse;
 use DateTime;
 use Throwable;
 
@@ -44,7 +43,7 @@ class Helper
     {
         Helper::writeLog($e->getMessage());
 
-        $response = new ServerErrorResponse();
+        $response = new Response('renderError', 'К сожалению произошла ошибка сервера, попробуйте позже', 500);
 
         http_response_code($response->getStatusCode());
         echo $response->getData();

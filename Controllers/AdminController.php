@@ -5,9 +5,6 @@ namespace Controllers;
 use Core\App;
 use Core\Request;
 use Core\Response;
-use Core\Response\AccessDeniedResponse;
-use Core\Response\JSONResponse;
-use Core\Response\PageNotFoundResponse;
 
 class AdminController
 {
@@ -18,7 +15,7 @@ class AdminController
      */
     public function list(): Response
     {
-        return !$this->isAdmin() ? $this->accessForbidden() : new JSONResponse(App::getService('adminService')->getUsersList());
+        return !$this->isAdmin() ? $this->accessForbidden() : new Response('json', App::getService('adminService')->getUsersList());
     }
 
     /**
@@ -63,7 +60,7 @@ class AdminController
             return $this->pageNotFound();
         }
 
-        return new JSONResponse($data);
+        return new Response('json', $data);
     }
 
     /**
@@ -116,7 +113,7 @@ class AdminController
      */
     private function accessForbidden(): Response
     {
-        return new AccessDeniedResponse();
+        return new Response('renderError', 'Доступ запрещен', 403);
     }
 
     /**
@@ -126,6 +123,6 @@ class AdminController
      */
     private function pageNotFound(): Response
     {
-        return new PageNotFoundResponse();
+        return new Response('renderError', 'Страница не найдена', 404);
     }
 }

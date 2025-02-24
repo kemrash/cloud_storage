@@ -16,6 +16,6 @@ class IndexController
      */
     public function getIndexHtml(): Response
     {
-        return new Response(file_get_contents('./Templates/index.html'));
+        return new Response('html', file_get_contents('./templates/index.html'));
     }
 }

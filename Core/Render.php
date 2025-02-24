@@ -27,9 +27,9 @@ class Render
      */
     public function getRender(): string
     {
-        $fullPathFile = './Templates/' . $this->templateName;
+        $fullPathFile = './templates/' . $this->templateName;
 
-        if (!isset($fullPathFile) || !$data = file_get_contents('./Templates/' . $this->templateName)) {
+        if (!isset($fullPathFile) || !$data = file_get_contents($fullPathFile)) {
             throw new AppException(__CLASS__, "Файл {$this->templateName} не найден, или не удается его прочитать");
         }
 

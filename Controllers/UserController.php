@@ -7,9 +7,6 @@ use Core\Config;
 use Core\Helper;
 use Core\Request;
 use Core\Response;
-use Core\Response\AccessDeniedResponse;
-use Core\Response\JSONResponse;
-use Core\Response\PageNotFoundResponse;
 use Models\User;
 use traits\UserTrait;
 
@@ -20,12 +17,12 @@ class UserController
     /**
      * Возвращает список пользователей в формате JSON.
      *
-     * @return JSONResponse Ответ с данными в формате JSON.
+     * @return Response Ответ с данными в формате JSON.
      */
     public function list(): Response
     {
         $data = App::getService('userService')->getUsersList();
-        $response = new JSONResponse($data);
+        $response = new Response('json', $data);
 
         return $response;
     }
@@ -41,10 +38,10 @@ class UserController
         $data = App::getService('userService')->getUserById($params[0]);
 
         if ($data === null) {
-            return new PageNotFoundResponse();
+            return new Response('renderError', 'Страница не найдена', 404);
         }
 
-        return new JSONResponse($data);
+        return new Response('json', $data);
     }
 
     /**
@@ -57,7 +54,7 @@ class UserController
     public function update(Request $request): Response
     {
         if (!isset($_SESSION['id']) || isset($request->getData()['PUT']['id']) && $_SESSION['id'] !== (int) $request->getData()['PUT']['id']) {
-            return new AccessDeniedResponse();
+            return new Response('renderError', 'Доступ запрещен', 403);
         }
 
         return App::getService('userService')->updateUser($request->getData()['PUT'], (int) $_SESSION['id'], $_SESSION['role']);
@@ -91,13 +88,13 @@ class UserController
         }
 
         if ($email === null || $password === null) {
-            return new JSONResponse(Helper::showError('Не все обязательные поля заполнены, или их значения не корректны'), 400);
+            return new Response('json', Helper::showError('Не все обязательные поля заполнены, или их значения не корректны'), 400);
         }
 
         App::getService('userService')->loginUser($email, $password);
 
         if (!App::issetClass('user')) {
-            return new JSONResponse(Helper::showError('Неправильный логин или пароль'), 401);
+            return new Response('json', Helper::showError('Неправильный логин или пароль'), 401);
         }
 
         $user = App::getService('user');
@@ -105,19 +102,19 @@ class UserController
         $_SESSION['id'] = $user->id;
         $_SESSION['role'] = $user->role;
 
-        return new JSONResponse();
+        return new Response();
     }
 
     /**
      * Завершает текущую сессию пользователя и возвращает JSON-ответ.
      *
-     * @return JSONResponse JSON-ответ, подтверждающий завершение сессии.
+     * @return Response JSON-ответ, подтверждающий завершение сессии.
      */
     public function logout(): Response
     {
         App::getService('session')->destroySession();
 
-        return new JSONResponse();
+        return new Response();
     }
 
     /**
@@ -141,26 +138,23 @@ class UserController
      * @param Request $request Объект запроса, содержащий данные запроса.
      * 
      * @return Response JSON-ответ с результатом операции.
-     *
-     * @throws InvalidArgumentException Если email не передан или некорректен.
-     * @throws RuntimeException Если вошедший пользователь пытается сбросить пароль.
      */
     public function preparationResetPassword(Request $request): Response
     {
         if (isset($_SESSION['id'])) {
-            return new JSONResponse(Helper::showError('Вошедший пользователь не может сбросить пароль'), 403);
+            return new Response('json', Helper::showError('Вошедший пользователь не может сбросить пароль'), 403);
         }
 
         $email = null;
 
         if (!isset($request->getData()['GET']['email'])) {
-            return new JSONResponse(Helper::showError('Не передан email'), 400);
+            return new Response('json', Helper::showError('Не передан email'), 400);
         }
 
         $email = trim($request->getData()['GET']['email']);
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return new JSONResponse(Helper::showError('Email не корректен'), 400);
+            return new Response('json', Helper::showError('Email не корректен'), 400);
         }
 
         $url = $request->getData()['originUrl'] . $request->getRoute();
@@ -184,7 +178,7 @@ class UserController
     public function resetPassword(Request $request): Response
     {
         if (isset($_SESSION['id'])) {
-            return new JSONResponse(Helper::showError('Вошедший пользователь не может сбросить пароль'), 403);
+            return new Response('json', Helper::showError('Вошедший пользователь не может сбросить пароль'), 403);
         }
 
         $id = null;
@@ -205,7 +199,7 @@ class UserController
         }
 
         if (count($errors) > 0) {
-            return new JSONResponse(Helper::showError(implode(', ', $errors)), 400);
+            return new Response('json', Helper::showError(implode(', ', $errors)), 400);
         }
 
         $id = (int) trim($request->getData()['GET']['id']);

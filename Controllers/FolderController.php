@@ -6,7 +6,6 @@ use Core\App;
 use Core\Helper;
 use Core\Request;
 use Core\Response;
-use Core\Response\JSONResponse;
 use traits\PageTrait;
 use traits\UserTrait;
 
@@ -133,14 +132,16 @@ class FolderController
         $data = $request->getData()[strtoupper($httpMethod)] ?? [];
 
         if (!isset($data[$idKey]) || !ctype_digit((string)$data[$idKey])) {
-            return new JSONResponse(
+            return new Response(
+                'json',
                 Helper::showError("Не передан {$idKey} или его значение не корректно"),
                 400
             );
         }
 
         if (!isset($data['name']) || !is_string($data['name']) || mb_strlen($data['name']) > 255) {
-            return new JSONResponse(
+            return new Response(
+                'json',
                 Helper::showError('Не передан name или его значение превышает 255 символов'),
                 400
             );

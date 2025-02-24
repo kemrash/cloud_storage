@@ -8,8 +8,6 @@ use Core\Db;
 use Core\FileStorage;
 use Core\Helper;
 use Core\Response;
-use Core\Response\JSONResponse;
-use Core\Response\PageNotFoundResponse;
 use Models\Folder;
 use PDOException;
 
@@ -25,7 +23,7 @@ class FolderService
     {
         $data = App::getService('folderRepository')::getUserFoldersList($userId);
 
-        return new JSONResponse($data);
+        return new Response('json', $data);
     }
 
     /**
@@ -40,7 +38,7 @@ class FolderService
     public function createUserFolder(int $userId, int $parentId, string $name): Response
     {
         if ($parentId === 0) {
-            return new JSONResponse(Helper::showError('Нельзя создать еще одну корневую папку'), 400);
+            return new Response('json', Helper::showError('Нельзя создать еще одну корневую папку'), 400);
         }
 
         $folderId = null;
@@ -49,10 +47,13 @@ class FolderService
         try {
             $folderId = App::getService('folderRepository')::addFolder($folder);
 
-            return new JSONResponse([
-                'status' => 'ok',
-                'folderId' => $folderId
-            ]);
+            return new Response(
+                'json',
+                [
+                    'status' => 'ok',
+                    'folderId' => $folderId
+                ]
+            );
         } catch (PDOException $e) {
             $connection = Db::$connection;
 
@@ -61,7 +62,7 @@ class FolderService
             }
 
             if ($e->getCode() === '23000') {
-                return new JSONResponse(Helper::showError('Папка с такими параметрами уже существует'), 400);
+                return new Response('json', Helper::showError('Папка с такими параметрами уже существует'), 400);
             }
 
             throw new AppException(__CLASS__, $e->getMessage());
@@ -80,7 +81,7 @@ class FolderService
     {
         $data = App::getService('folderRepository')::renameFolder($userId, $id, $name);
 
-        return isset($data['code']) && $data['code'] === 404 ? new PageNotFoundResponse() : new JSONResponse($data);
+        return isset($data['code']) && $data['code'] === 404 ? new Response('renderError', 'Страница не найдена', 404) : new Response('json', $data);
     }
 
     /**
@@ -95,15 +96,18 @@ class FolderService
         $folder = App::getService('folderRepository')::getFolderBy($userId, $folderId);
 
         if ($folder === null) {
-            return new PageNotFoundResponse();
+            return new Response('renderError', 'Страница не найдена', 404);
         }
 
-        return new JSONResponse([
-            'id' => $folder->id,
-            'userId' => $folder->userId,
-            'parentId' => $folder->parentId,
-            'name' => $folder->name
-        ]);
+        return new Response(
+            'json',
+            [
+                'id' => $folder->id,
+                'userId' => $folder->userId,
+                'parentId' => $folder->parentId,
+                'name' => $folder->name
+            ]
+        );
     }
 
     /**
@@ -118,11 +122,11 @@ class FolderService
         $folder = App::getService('folderRepository')::getFolderBy($userId, $folderId);
 
         if ($folder === null) {
-            return new PageNotFoundResponse();
+            return new Response('renderError', 'Страница не найдена', 404);
         }
 
         if ($folder->parentId === 0) {
-            return new JSONResponse(Helper::showError('Нельзя удалить корневую папку'), 400);
+            return new Response('json', Helper::showError('Нельзя удалить корневую папку'), 400);
         }
 
         $filesList = $this->deleteFolderAndReturnFilesList((int) $folder->id);
@@ -130,7 +134,7 @@ class FolderService
         $filesStorage = new FileStorage();
         $filesStorage->deleteFiles($filesList);
 
-        return new JSONResponse();
+        return new Response();
     }
 
     /**

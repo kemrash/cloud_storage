@@ -6,7 +6,6 @@ use Core\App;
 use Core\Config;
 use Core\Helper;
 use Core\Response;
-use Core\Response\JSONResponse;
 use DateTime;
 use Models\ResetPassword;
 
@@ -30,13 +29,13 @@ class ResetPasswordService
         $user = App::getService('userRepository')::getUserBy(['email' => $email]);
 
         if ($user === null) {
-            return new JSONResponse(Helper::showError("Не найден пользователь с email = {$email}"), 404);
+            return new Response('json', Helper::showError("Не найден пользователь с email = {$email}"), 404);
         }
 
         $resetPassword = App::getService('resetPasswordRepository')::getResetPasswordBy(['userId' => $user->id]);
 
         if ($resetPassword !== null && DateTime::createFromFormat(Config::getConfig('app.dateTimeFormat'), $resetPassword->expiresAt) >= $dateTime) {
-            return new JSONResponse(Helper::showError('Ещё не прошло ' . $expiresInMinutes . ' минут с момента последнего запроса'), 400);
+            return new Response('json', Helper::showError('Ещё не прошло ' . $expiresInMinutes . ' минут с момента последнего запроса'), 400);
         }
 
         $expiresAt = $dateTime->modify("+{$expiresInMinutes} minutes")->format(Config::getConfig('app.dateTimeFormat'));
@@ -49,7 +48,7 @@ class ResetPasswordService
 
         $resetPassword->sendEmail($user->email, $url, $token);
 
-        return new JSONResponse();
+        return new Response();
     }
 
     /**
@@ -70,11 +69,11 @@ class ResetPasswordService
         $resetPassword = App::getService('resetPasswordRepository')::getResetPasswordBy(['userId' => $id]);
 
         if ($resetPassword === null) {
-            return new JSONResponse(Helper::showError("Не найден пользователь с id = {$id} или токен истек"), 404);
+            return new Response('json', Helper::showError("Не найден пользователь с id = {$id} или токен истек"), 404);
         }
 
         if (!$resetPassword->isValidToken($token)) {
-            return new JSONResponse(Helper::showError('Неверный токен'), 400);
+            return new Response('json', Helper::showError('Неверный токен'), 400);
         }
 
         $passwordEncrypted = password_hash($password, PASSWORD_DEFAULT);
@@ -82,9 +81,9 @@ class ResetPasswordService
         $data = App::getService('resetPasswordRepository')::transactionUpdatePasswordUserAndDeleteResetPassword($id, $passwordEncrypted);
 
         if ($data['status'] === 'error') {
-            return new JSONResponse(Helper::showError($data['data']), 400);
+            return new Response('json', Helper::showError($data['data']), 400);
         }
 
-        return new JSONResponse();
+        return new Response();
     }
 }

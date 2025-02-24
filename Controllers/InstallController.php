@@ -5,7 +5,6 @@ namespace Controllers;
 use Core\App;
 use Core\Request;
 use Core\Response;
-use Core\Response\PageNotFoundResponse;
 
 class InstallController
 {
@@ -20,7 +19,7 @@ class InstallController
     public function install(Request $request): Response
     {
         if (file_exists('./config.php')) {
-            return new PageNotFoundResponse();
+            return new Response('renderError', 'Страница не найдена', 404);
         }
 
         return App::getService('installService')->install($request->getData()['POST']);

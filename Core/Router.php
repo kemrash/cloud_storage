@@ -2,10 +2,6 @@
 
 namespace Core;
 
-use Core\Request;
-use Core\Response;
-use Core\Response\PageNotFoundResponse;
-
 class Router
 {
     private const ROUTES = [
@@ -101,17 +97,11 @@ class Router
     ];
 
     /**
-     * Обрабатывает входящий HTTP-запрос и возвращает соответствующий объект Response.
-     * 
-     * @param Request $request Объект запроса, содержащий маршрут и метод HTTP.
-     * 
-     * @return Response|null Возвращает объект Response, если маршрут найден, 
-     *                       либо null в случае ошибки.
-     * 
-     * @throws AppException Если указанный контроллер или его метод не существует.
-     * 
-     * В зависимости от наличия динамических параметров в маршруте, 
-     * метод контроллера вызывается с дополнительными параметрами или без них.
+     * Обрабатывает входящий запрос и возвращает соответствующий ответ.
+     *
+     * @param Request $request Входящий HTTP-запрос.
+     * @return Response|null Возвращает объект ответа или null, если маршрут не найден.
+     * @throws AppException Если контроллер или метод не найдены.
      */
     public function processRequest(Request $request): ?Response
     {
@@ -139,7 +129,7 @@ class Router
             !is_array(self::ROUTES[$route][$method]) ||
             count(self::ROUTES[$route][$method]) !== 2
         ) {
-            return new PageNotFoundResponse();
+            return new Response('renderError', 'Страница не найдена', 404);
         }
 
         [$controllerClass, $methodName] = self::ROUTES[$route][$method];

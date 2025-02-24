@@ -3,7 +3,6 @@
 namespace traits;
 
 use Core\Response;
-use Core\Response\AccessDeniedResponse;
 
 trait UserTrait
 {
@@ -18,7 +17,7 @@ trait UserTrait
     private function checkUserAuthorization(): ?Response
     {
         if (!isset($_SESSION['id'])) {
-            return new AccessDeniedResponse();
+            return new Response('renderError', 'Доступ запрещен', 403);
         }
 
         return null;

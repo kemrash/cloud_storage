@@ -9,9 +9,6 @@ use Core\Db;
 use Core\FileStorage;
 use Core\Helper;
 use Core\Response;
-use Core\Response\AccessDeniedResponse;
-use Core\Response\JSONResponse;
-use Core\Response\PageNotFoundResponse;
 use Exception;
 use PDOException;
 use Ramsey\Uuid\Uuid;
@@ -33,7 +30,7 @@ class FileService
     {
         $data = App::getService('fileRepository')::getFilesListUser($id);
 
-        return new JSONResponse($data);
+        return new Response('json', $data);
     }
 
     /**
@@ -49,24 +46,27 @@ class FileService
         $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
 
         if ($file === null) {
-            return new PageNotFoundResponse();
+            return new Response('renderError', 'Страница не найдена', 404);
         }
 
         $fileShareUsersList = App::getService('fileRepository')::getUsersFileShare($fileId);
 
         if ($file->userId !== $userId && !in_array(['userId' => $userId], $fileShareUsersList)) {
-            return new AccessDeniedResponse();
+            return new Response('renderError', 'Доступ запрещен', 403);
         }
 
-        return new JSONResponse([
-            'id' => $file->id,
-            'userId' => $file->userId,
-            'serverName' => $file->serverName,
-            'folderId' => $file->folderId,
-            'origenName' => $file->origenName,
-            'mimeType' => $file->mimeType,
-            'size' => $file->size,
-        ]);
+        return new Response(
+            'json',
+            [
+                'id' => $file->id,
+                'userId' => $file->userId,
+                'serverName' => $file->serverName,
+                'folderId' => $file->folderId,
+                'origenName' => $file->origenName,
+                'mimeType' => $file->mimeType,
+                'size' => $file->size,
+            ]
+        );
     }
 
     /**
@@ -87,10 +87,10 @@ class FileService
             if ($folder === null || $folder->userId !== $userId) {
 
                 if ($folder === null) {
-                    return new JSONResponse(Helper::showError('Папка не найдена'), 400);
+                    return new Response('json', Helper::showError('Папка не найдена'), 400);
                 }
 
-                return new AccessDeniedResponse();
+                return new Response('renderError', 'Доступ запрещен', 403);
             }
 
             $origenFileName = $request->getFileName();
@@ -98,7 +98,7 @@ class FileService
             $file = App::getService('fileRepository')::getFileBy(['folderId' => $folderId, 'origenName' => $origenFileName]);
 
             if ($file !== null) {
-                return new JSONResponse(Helper::showError('Файл с таким именем уже существует в этой папке'), 400);
+                return new Response('json', Helper::showError('Файл с таким именем уже существует в этой папке'), 400);
             }
 
             $config = new FlowConfig();
@@ -127,10 +127,10 @@ class FileService
                     $connection->rollBack();
 
                     if ($folder === null) {
-                        return new JSONResponse(Helper::showError('Папка не найдена'), 400);
+                        return new Response('json', Helper::showError('Папка не найдена'), 400);
                     }
 
-                    return new AccessDeniedResponse();
+                    return new Response('renderError', 'Доступ запрещен', 403);
                 }
 
                 $maxAttempts = 2;
@@ -173,17 +173,23 @@ class FileService
 
                 $this->randomClearFolderChunks($chunksTempFolder);
 
-                return new JSONResponse([
-                    'status' => 'success',
-                    'message' => 'Файл успешно загружен',
-                    'path' => $uploadPath
-                ]);
+                return new Response(
+                    'json',
+                    [
+                        'status' => 'success',
+                        'message' => 'Файл успешно загружен',
+                        'path' => $uploadPath
+                    ]
+                );
             }
 
-            return new JSONResponse([
-                'status' => 'continue',
-                'message' => 'Чанк получен, продолжается загрузка'
-            ]);
+            return new Response(
+                'json',
+                [
+                    'status' => 'continue',
+                    'message' => 'Чанк получен, продолжается загрузка'
+                ]
+            );
         } catch (Exception $e) {
             if (isset($uploadFileName) && file_exists($uploadFolder . $uploadFileName)) {
                 try {
@@ -234,12 +240,12 @@ class FileService
         $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
 
         if ($file === null || $file->userId !== $userId) {
-            return new AccessDeniedResponse();
+            return new Response('renderError', 'Доступ запрещен', 403);
         }
 
         $data = App::getService('fileRepository')::getFileShareList($fileId);
 
-        return new JSONResponse($data);
+        return new Response('json', $data);
     }
 
     /**
@@ -261,19 +267,19 @@ class FileService
 
             if ($file === null || $file->userId !== $userId) {
                 $connection->rollBack();
-                return new AccessDeniedResponse();
+                return new Response('renderError', 'Доступ запрещен', 403);
             }
 
             $user = App::getService('userRepository')::getUserBy(['id' => $shareUserId]);
 
             if ($user === null) {
                 $connection->rollBack();
-                return new JSONResponse(Helper::showError('Пользователь не найден'), 400);
+                return new Response('json', Helper::showError('Пользователь не найден'), 400);
             }
 
             if ($file->userId === $shareUserId) {
                 $connection->rollBack();
-                return new JSONResponse(Helper::showError('Этот файл и так принадлежит пользователю'), 400);
+                return new Response('json', Helper::showError('Этот файл и так принадлежит пользователю'), 400);
             }
 
             try {
@@ -281,12 +287,12 @@ class FileService
 
                 $connection->commit();
 
-                return new JSONResponse();
+                return new Response();
             } catch (PDOException $e) {
                 if ($e->getCode() === '23000') {
                     $connection->rollBack();
 
-                    return new JSONResponse(Helper::showError('Пользователь уже имеет доступ к этому файлу'), 400);
+                    return new Response('json', Helper::showError('Пользователь уже имеет доступ к этому файлу'), 400);
                 }
 
                 throw new Exception($e->getMessage());
@@ -313,12 +319,12 @@ class FileService
         $file = App::getService('fileRepository')::getFileBy(['id' => $fileId]);
 
         if ($file === null || $file->userId !== $userId) {
-            return new AccessDeniedResponse();
+            return new Response('renderError', 'Доступ запрещен', 403);
         }
 
         App::getService('fileRepository')::deleteShareBy($shareUserId, $fileId);
 
-        return new JSONResponse();
+        return new Response();
     }
 
     /**
@@ -333,19 +339,19 @@ class FileService
         $file = App::getService('fileRepository')::getFileBy(['serverName' => $serverName]);
 
         if ($file === null) {
-            return new PageNotFoundResponse();
+            return new Response('renderError', 'Страница не найдена', 404);
         }
 
         $fileShareUsersList = App::getService('fileRepository')::getUsersFileShare($file->id);
 
         if ($file->userId !== $userId && !in_array(['userId' => $userId], $fileShareUsersList)) {
-            return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+            return new Response('json', Helper::showError('Доступ запрещен'), 403);
         }
 
         $filesStorage = new FileStorage();
 
         if ($filesStorage->fileForceDownload($file->serverName, $file->origenName, $file->mimeType) === false) {
-            return new PageNotFoundResponse();
+            return new Response('renderError', 'Страница не найдена', 404);
         }
     }
 
@@ -380,7 +386,7 @@ class FileService
             if ($file === null || $file->userId !== $userId) {
                 $connection->rollBack();
 
-                return new JSONResponse(Helper::showError('Доступ запрещен'), 403);
+                return new Response('json', Helper::showError('Доступ запрещен'), 403);
             }
 
             call_user_func_array([App::getService($serviceName), $method], $params);
@@ -392,7 +398,7 @@ class FileService
 
             $connection->commit();
 
-            return new JSONResponse();
+            return new Response();
         } catch (Exception $e) {
             if ($connection->inTransaction()) {
                 $connection->rollBack();

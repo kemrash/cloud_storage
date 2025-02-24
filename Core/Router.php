@@ -25,8 +25,8 @@ class Router
             'GET' => ['UserController', 'logout'],
         ],
         '/users/reset_password' => [
-            'GET' => ['ResetPasswordController', 'preparationResetPassword'],
-            'PATCH' => ['ResetPasswordController', 'resetPassword'],
+            'GET' => ['UserController', 'preparationResetPassword'],
+            'PATCH' => ['UserController', 'resetPassword'],
         ],
         '/users/search/{email}' => [
             'GET' => ['UserController', 'searchByEmail'],

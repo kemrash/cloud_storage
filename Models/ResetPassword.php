@@ -2,8 +2,8 @@
 
 namespace Models;
 
-use Core\App;
 use Core\Config;
+use Core\Mail;
 
 class ResetPassword
 {
@@ -53,7 +53,7 @@ class ResetPassword
      *
      * @return void
      */
-    public function sendEmail(string $email, string $url, string $token): void
+    public function sendEmail(string $text, string $url, string $token): void
     {
         $title = Config::getConfig('app.name') . ' - Восстановление пароля';
         $message =  'Вы, либо кто-то, попросил восстановить пароль для вашего аккаунта на сайте ' .
@@ -66,7 +66,8 @@ class ResetPassword
             $token .
             '. Если вы не запрашивали восстановление пароля, проигнорируйте это письмо.';
 
-        App::getService('mail')->sendEmail($email, $title, $message);
+        $email = new Mail();
+        $email->sendEmail($text, $title, $message);
     }
 
     /**

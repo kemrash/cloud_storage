@@ -86,7 +86,8 @@ class App
             Db::getConnection();
         }
 
-        self::getService('session')->startSession();
+        $session = new Session();
+        $session->startSession();
 
         $router = new Router();
         $response = $router->processRequest($request);

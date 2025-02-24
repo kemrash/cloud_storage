@@ -102,7 +102,7 @@ class FileService
             }
 
             $config = new FlowConfig();
-            $chunksTempFolder = './Chunks_temp_folder';
+            $chunksTempFolder = './chunks_temp_folder';
             $uploadFolder = Config::getConfig('app.uploadFile.folderFileStorage');
 
             if (!is_dir($chunksTempFolder) && !mkdir($chunksTempFolder, 0755, true)) {

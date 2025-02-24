@@ -1,6 +1,6 @@
 <?php
 
-namespace Traits;
+namespace traits;
 
 use Core\Response;
 use Core\Response\AccessDeniedResponse;

@@ -88,14 +88,16 @@ class InstallService
                 'Поля dbHost, dbName, dbUser, dbPassword обязательны '), 400);
         }
 
-        if (file_exists('./Sql/install.sql') === false) {
+        $sqlPath = './sql/install.sql';
+
+        if (file_exists($sqlPath) === false) {
             $textError = 'Не удалось найти файл базы данных';
             Helper::writeLog(__CLASS__ . ': ' . $textError);
 
             return new JSONResponse(Helper::showError($textError), 500);
         }
 
-        if ($connection->exec(file_get_contents('./Sql/install.sql')) === false) {
+        if ($connection->exec(file_get_contents($sqlPath)) === false) {
             $textError = 'Не удалось создать базу данных';
             Helper::writeLog(__CLASS__ . ': ' . $textError);
 

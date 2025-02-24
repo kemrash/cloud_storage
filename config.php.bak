@@ -6,7 +6,7 @@ return [
         'dateTimeFormat' => 'Y-m-d H:i:s',
         'idUserSystem' => 0,
         'uploadFile' => [
-            'folderFileStorage' => './Storage/',
+            'folderFileStorage' => './storage/',
             'maxFileSize' => 2 * 1024 * 1024 * 1024,
         ],
     ],

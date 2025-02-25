@@ -25,15 +25,15 @@ class Session
         session_start();
 
         if (isset($_SESSION['id'])) {
-            $user = App::getService('userRepository')::getUserBy(['id' => (int) $_SESSION['id']]);
+            $user = App::getService('user')->get(['id' => (int) $_SESSION['id']]);
 
             if ($user === null) {
                 $this->destroySession();
                 return;
             }
 
-            $_SESSION['id'] = $user->id;
-            $_SESSION['role'] = $user->role;
+            $_SESSION['id'] = $user['id'];
+            $_SESSION['role'] = $user['role'];
         }
     }
 

@@ -5,6 +5,7 @@ namespace Core;
 use PDO;
 use PDOException;
 use Core\Config;
+use Exception;
 
 class Db
 {
@@ -44,11 +45,11 @@ class Db
      *
      * Вызывается при десериализации объекта. Запрещает восстановление экземпляра класса.
      *
-     * @throws AppException Исключение, выбрасываемое при попытке восстановления экземпляра класса.
+     * @throws Exception Исключение, выбрасываемое при попытке восстановления экземпляра класса.
      */
     public function __wakeup(): void
     {
-        throw new AppException(__CLASS__, "Нельзя восстановить экземпляр");
+        throw new Exception(__CLASS__ . ": Нельзя восстановить экземпляр");
     }
 
     /**
@@ -77,7 +78,7 @@ class Db
      *
      * @return array Массив найденных записей.
      *
-     * @throws AppException Если нет допустимых столбцов для выбора или произошла ошибка при выполнении запроса.
+     * @throws Exception Если нет допустимых столбцов для выбора или произошла ошибка при выполнении запроса.
      */
     public static function findBy(string $dbName, array $columns, array $allowedColumns, array $where = []): array
     {
@@ -86,7 +87,7 @@ class Db
         $safeColumns = array_intersect($allowedColumns, $columns);
 
         if (empty($safeColumns)) {
-            throw new AppException(__CLASS__, "Нет допустимых столбцов для выбора.");
+            throw new Exception(__CLASS__ . ': Нет допустимых столбцов для выбора.');
         }
 
         $columnList = implode(', ', array_map(fn($col) => "`$col`", $safeColumns));
@@ -110,7 +111,7 @@ class Db
 
             return $statement->fetchAll();
         } catch (PDOException $e) {
-            throw new AppException(__CLASS__, $e->getMessage());
+            throw new Exception(__CLASS__ . ': ' . $e->getMessage());
         }
     }
 
@@ -121,7 +122,7 @@ class Db
      * @param array<string, mixed> $params Ассоциативный массив параметров для поиска (ключ - название столбца, значение - значение для поиска).
      * @param string[] $allowedColumns Массив допустимых названий столбцов для поиска.
      * @return array<string, mixed>|null Возвращает найденную запись в виде ассоциативного массива или null, если запись не найдена.
-     * @throws AppException В случае ошибки выполнения запроса.
+     * @throws Exception В случае ошибки выполнения запроса.
      */
     public static function findOneBy(string $dbName, array $params, array $allowedColumns): ?array
     {
@@ -140,7 +141,7 @@ class Db
 
             return $result ? $result : null;
         } catch (PDOException $e) {
-            throw new AppException(__CLASS__, $e->getMessage());
+            throw new Exception(__CLASS__ . ': ' . $e->getMessage());
         }
     }
 
@@ -151,7 +152,6 @@ class Db
      * @param array<string, mixed> $params Ассоциативный массив параметров, где ключи - это названия колонок, а значения - значения для вставки.
      * @param string[] $allowedColumns Массив допустимых колонок для вставки.
      * @return string Возвращает идентификатор последней вставленной записи.
-     * @throws InvalidArgumentException Если название базы данных некорректно.
      */
     public static function insert(string $dbName, array $params, array $allowedColumns): string
     {
@@ -193,7 +193,7 @@ class Db
      * @return array<string, string> Возвращает массив с ключом 'status' и значением 'ok' в случае успешного выполнения, 
      * либо массив с ошибкой в случае ошибки уникальности.
      *
-     * @throws AppException В случае возникновения ошибки при выполнении запроса.
+     * @throws Exception В случае возникновения ошибки при выполнении запроса.
      */
     public static function updateOneBy(string $dbName, array $paramsSet, array $paramsWhere, array $allowedColumns): array
     {
@@ -253,7 +253,7 @@ class Db
                 return $error;
             }
 
-            throw new AppException(__CLASS__, $e->getMessage());
+            throw new Exception(__CLASS__ . ': ' . $e->getMessage());
         }
     }
 
@@ -264,7 +264,7 @@ class Db
      * @param array<string, mixed> $paramsWhere Ассоциативный массив условий для удаления записи (ключ - название столбца, значение - значение для условия).
      * @param string[] $allowedColumns Массив допустимых названий столбцов для условий.
      *
-     * @throws AppException В случае ошибки выполнения запроса.
+     * @throws Exception В случае ошибки выполнения запроса.
      * @return void
      */
     public static function deleteOneBy(string $dbName, array $paramsWhere, array $allowedColumns): void
@@ -280,7 +280,7 @@ class Db
         try {
             $statement->execute($data['bindings']);
         } catch (PDOException $e) {
-            throw new AppException(__CLASS__, $e->getMessage());
+            throw new Exception(__CLASS__ . ': ' . $e->getMessage());
         }
     }
 
@@ -293,7 +293,7 @@ class Db
      * 
      * @return array{whereClause: string, bindings: array<string, mixed>} Ассоциативный массив с ключами 'whereClause' (строка условия WHERE) и 'bindings' (массив привязок для подготовленного запроса).
      * 
-     * @throws AppException Если в $params передана недопустимая колонка.
+     * @throws Exception Если в $params передана недопустимая колонка.
      */
     private static function buildWhereClauseAndBindings(array $params, array $allowedColumns, string $separator = ' AND '): array
     {
@@ -302,7 +302,7 @@ class Db
 
         foreach ($params as $key => $value) {
             if (!in_array($key, $allowedColumns, true)) {
-                throw new AppException(__CLASS__, "Недопустимая колонка: $key");
+                throw new Exception(__CLASS__ . ": Недопустимая колонка: $key");
             }
 
             $conditions[] = "{$key} = :{$key}";
@@ -319,12 +319,12 @@ class Db
      *
      * @param string $dbName Имя базы данных для проверки.
      * 
-     * @throws AppException Если имя базы данных недопустимо.
+     * @throws Exception Если имя базы данных недопустимо.
      */
     private static function validateDatabaseName(string $dbName): void
     {
         if (!in_array($dbName, self::$allowedDatabases, true)) {
-            throw new AppException(__CLASS__, 'Недопустимое имя базы данных');
+            throw new Exception(__CLASS__ . ": Недопустимое имя базы данных");
         }
     }
 }

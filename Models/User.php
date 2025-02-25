@@ -2,10 +2,13 @@
 
 namespace Models;
 
+use Core\Config;
+use Core\Db;
 use Exception;
 
 class User
 {
+    private const DB_NAME = 'user';
     private const ALLOWED_ROLE = ['user', 'admin'];
 
     private int $id;
@@ -16,33 +19,13 @@ class User
     private ?string $gender;
 
     /**
-     * Конструктор класса User.
-     *
-     * @param int $id Идентификатор пользователя.
-     * @param string $email Электронная почта пользователя.
-     * @param string $passwordEncrypted Зашифрованный пароль пользователя.
-     * @param string $role Роль пользователя (по умолчанию 'user').
-     * @param int|null $age Возраст пользователя (по умолчанию null).
-     * @param string|null $gender Пол пользователя (по умолчанию null).
-     */
-    public function __construct(int $id, string $email, string $passwordEncrypted, string $role = 'user', int $age = null, string $gender = null)
-    {
-        $this->__set('id', $id);
-        $this->__set('email', $email);
-        $this->__set('passwordEncrypted', $passwordEncrypted);
-        $this->__set('role', $role);
-        $this->__set('age', $age);
-        $this->__set('gender', $gender);
-    }
-
-    /**
      * Проверяет, является ли указанный ID допустимым
      *
-     * @param int $id Идентификатор пользователя
+     * @param mixed $id Идентификатор пользователя
      *
      * @return bool True, если ID допустим, иначе false
      */
-    public static function isValidId(int $id): bool
+    public function isValidId(mixed $id): bool
     {
         return is_int($id) && $id > 0;
     }
@@ -50,47 +33,47 @@ class User
     /**
      * Проверяет, является ли указанный email допустимым
      *
-     * @param string $email Адрес электронной почты для проверки
+     * @param mixed $email Адрес электронной почты для проверки
      *
      * @return bool True, если email допустим, иначе false
      */
-    public static function isValidEmail(string $email): bool
+    public function isValidEmail(mixed $email): bool
     {
-        return filter_var($email, FILTER_VALIDATE_EMAIL) && mb_strlen($email, 'UTF-8') <= 150;
+        return is_string($email) && filter_var($email, FILTER_VALIDATE_EMAIL) && mb_strlen($email, 'UTF-8') <= 150;
     }
 
     /**
      * Проверяет, является ли указанный пароль допустимым
      *
-     * @param string $password Пароль для проверки
+     * @param mixed $password Пароль для проверки
      *
      * @return bool True, если пароль допустим, иначе false
      */
-    public static function isValidPassword(string $password): bool
+    public function isValidPassword(mixed $password): bool
     {
-        return mb_strlen($password, 'UTF-8') <= 255;
+        return is_string($password) && mb_strlen($password, 'UTF-8') <= 255;
     }
 
     /**
      * Проверяет, является ли указанная роль допустимой
      *
-     * @param string $role Роль для проверки
+     * @param mixed $role Роль для проверки
      *
      * @return bool True, если роль допустима, иначе false
      */
-    public static function isValidRole(string $role): bool
+    public function isValidRole(mixed $role): bool
     {
-        return in_array($role, self::ALLOWED_ROLE, true);
+        return is_string($role) && in_array($role, self::ALLOWED_ROLE, true);
     }
 
     /**
      * Проверяет, является ли указанное значение возраста допустимым
      *
-     * @param int|null $age Возраст для проверки
+     * @param mixed $age Возраст для проверки
      *
      * @return bool|null True, если возраст допустим, null если возраст не указан
      */
-    public static function isValidAge(int|null $age): ?bool
+    public function isValidAge(mixed $age): ?bool
     {
         return is_int($age) && $age >= 0 || $age === null;
     }
@@ -98,13 +81,13 @@ class User
     /**
      * Проверяет, является ли указанное значение пола допустимым
      *
-     * @param string|null $gender Пол для проверки
+     * @param mixed $gender Пол для проверки
      *
      * @return bool|null True, если пол допустим, null если пол не указан
      */
-    public static function isValidGender(string|null $gender): ?bool
+    public function isValidGender(mixed $gender): ?bool
     {
-        return in_array($gender, ['male', 'female'], true) || $gender === null;
+        return is_string($gender) && in_array($gender, ['male', 'female'], true) || $gender === null;
     }
 
     /**
@@ -266,5 +249,199 @@ class User
     public function __get(string $name): string|int|null
     {
         return $this->$name;
+    }
+
+    /**
+     * Возвращает список пользователей с указанными колонками.
+     *
+     * @param string ...$columns Перечисление колонок, которые необходимо выбрать.
+     * @return array<int, array<string, mixed>> Массив пользователей, где каждый пользователь представлен в виде ассоциативного массива.
+     */
+    public function list(...$columns): array
+    {
+        $data = Db::findBy(self::DB_NAME, $columns, Config::getConfig('database.dbColumns.user'));
+        $userSystem = Config::getConfig('app.idUserSystem');
+
+        if (isset($data[$userSystem])) {
+            unset($data[$userSystem]);
+            $data = array_values($data);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Получает данные пользователя из базы данных по заданным параметрам.
+     *
+     * @param array<string, mixed> $params Ассоциативный массив параметров для поиска пользователя.
+     * 
+     * @return array<string, mixed>|null Ассоциативный массив данных пользователя или null, если пользователь не найден или является системным пользователем.
+     */
+    public function get(array $params): ?array
+    {
+        $data = Db::findOneBy(self::DB_NAME, $params, Config::getConfig('database.dbColumns.user'));
+
+        if ($data === null || $data['id'] === Config::getConfig('app.idUserSystem')) {
+            return null;
+        }
+
+        foreach ($data as $key => $value) {
+            $this->__set($key, $value);
+        }
+
+        return $data;
+    }
+
+    public function update()
+    {
+        $setParams = [
+            'email' => trim($this->email),
+            'passwordEncrypted' => trim($this->passwordEncrypted),
+            'role' => trim($this->role),
+            'age' => trim($this->age),
+            'gender' => trim($this->gender),
+        ];
+
+        return Db::updateOneBy(self::DB_NAME, $setParams, ['id' => $this->id], Config::getConfig('database.dbColumns.user'));
+    }
+
+    /**
+     * Выполняет вход пользователя по указанным email и паролю.
+     *
+     * @param string $email Электронная почта пользователя.
+     * @param string $password Пароль пользователя.
+     * @return array|null Возвращает массив с ключом 'status' и значением 'ok' при успешном входе, или null при неудаче.
+     */
+    public function login(string $email, string $password): ?array
+    {
+        $data = $this->get(['email' => $email]);
+
+        if ($data === null || !password_verify($password, $data['passwordEncrypted'])) {
+            return null;
+        }
+
+        if (password_needs_rehash($data['passwordEncrypted'], PASSWORD_DEFAULT)) {
+            $data['passwordEncrypted'] = password_hash($password, PASSWORD_DEFAULT);
+
+            $this->updatePasswordById($data['id'], $data['passwordEncrypted']);
+        }
+
+        foreach ($data as $key => $value) {
+            $this->__set($key, $value);
+        }
+
+        return ['status' => 'ok'];
+    }
+
+    /**
+     * Метод для валидации параметров пользователя.
+     *
+     * @param array<string, mixed> $params Ассоциативный массив параметров для валидации.
+     * 
+     * @return array<int, string> Массив ошибок, если они есть.
+     */
+    public function allValidation(array $params): array
+    {
+        $errors = [];
+
+        foreach (Config::getConfig('database.dbColumns.user') as $parameter) {
+            switch ($parameter) {
+                case 'email':
+                    if (!isset($params['email'])) {
+                        $errors[] = 'Поле email обязательно для заполнения.';
+                        break;
+                    }
+
+                    if ($this->role !== 'admin' && $this->email !== $params['email']) {
+                        $errors[] = 'Только администратор может изменять email.';
+                    }
+
+                    try {
+                        $this->__set('email', $params['email']);
+                    } catch (Exception $e) {
+                        $errors[] = $e->getMessage();
+                    }
+                    break;
+
+                case 'passwordEncrypted':
+                    if (!isset($params['password'])) {
+                        $errors[] = 'Поле password обязательно для заполнения.';
+                        break;
+                    }
+
+                    try {
+                        $this->__set('passwordEncrypted', password_hash($params['password'], PASSWORD_DEFAULT));
+                    } catch (Exception $e) {
+                        $errors[] = $e->getMessage();
+                    }
+                    break;
+
+                case 'role':
+                    if (!isset($params['role'])) {
+                        $errors[] = 'Поле role обязательно для заполнения.';
+                        break;
+                    }
+
+                    if ($this->role !== 'admin' && $this->role !== $params['role']) {
+                        $errors[] = 'Только администратор может изменять role.';
+                        break;
+                    }
+
+                    try {
+                        $this->__set('role', $params['role']);
+                    } catch (Exception $e) {
+                        $errors[] = $e->getMessage();
+                    }
+                    break;
+
+                case 'age':
+                    if (!isset($params['age']) || $params['age'] === null) {
+                        $this->age = null;
+                        break;
+                    }
+
+                    $age = $params['age'];
+
+                    if (!preg_match('/^\d+$/', $age) || $age < 0) {
+                        $errors[] = 'Поле age должно быть целое число больше 0.';
+                        break;
+                    }
+
+                    try {
+                        $this->__set('age', $age);
+                    } catch (Exception $e) {
+                        $errors[] = $e->getMessage();
+                    }
+                    break;
+
+                case 'gender':
+                    if (!isset($params['gender'])) {
+                        $this->gender = null;
+                        break;
+                    }
+
+                    try {
+                        $this->__set('gender', $params['gender']);
+                    } catch (Exception $e) {
+                        $errors[] = $e->getMessage();
+                    }
+                    break;
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Обновляет зашифрованный пароль пользователя по его идентификатору.
+     *
+     * @param int $id Идентификатор пользователя.
+     * @param string $passwordEncrypted Зашифрованный пароль пользователя.
+     *
+     * @return void
+     */
+    private function updatePasswordById(int $id, string $passwordEncrypted): void
+    {
+        Db::updateOneBy(self::DB_NAME, ['passwordEncrypted' => $passwordEncrypted], ['id' => $id], Config::getConfig('database.dbColumns.user'));
     }
 }

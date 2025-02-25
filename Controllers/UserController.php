@@ -7,8 +7,6 @@ use Core\Config;
 use Core\Helper;
 use Core\Request;
 use Core\Response;
-use Core\Session;
-use Models\User;
 use traits\UserTrait;
 
 class UserController
@@ -16,33 +14,49 @@ class UserController
     use UserTrait;
 
     /**
-     * Возвращает список пользователей в формате JSON.
+     * Метод для получения списка пользователей.
      *
-     * @return Response Ответ с данными в формате JSON.
+     * @return Response Возвращает объект ответа в формате JSON, содержащий данные пользователей.
      */
     public function list(): Response
     {
-        $data = App::getService('userService')->getUsersList();
+        $data = App::getService('user')->list('id', 'role', 'age', 'gender');
         $response = new Response('json', $data);
 
         return $response;
     }
 
     /**
-     * Получает данные пользователя по его идентификатору.
+     * Получает информацию о пользователе по его идентификатору.
      *
-     * @param array{0: string} $params Массив параметров, где первый элемент - идентификатор пользователя.
-     * @return Response Ответ в формате JSON с данными пользователя или ответ с ошибкой "Страница не найдена".
+     * @param array<int, string> $params Массив параметров, где первый элемент - идентификатор пользователя.
+     * @return Response Ответ с информацией о пользователе в формате JSON или сообщение об ошибке.
      */
     public function get(array $params): Response
     {
-        $data = App::getService('userService')->getUserById($params[0]);
+        $userId = $params[0];
+        $user = App::getService('user');
 
-        if ($data === null) {
+        if (!ctype_digit($userId)) {
             return new Response('renderError', 'Страница не найдена', 404);
         }
 
-        return new Response('json', $data);
+        $userId = (int) $userId;
+
+        if (!isset($_SESSION['id']) || (int) $_SESSION['id'] !== (int) $userId) {
+            return new Response('renderError', 'Доступ запрещен', 403);
+        }
+
+        return new Response(
+            'json',
+            [
+                'id' => $user->id,
+                'email' => $user->email,
+                'role' => $user->role,
+                'age' => $user->age,
+                'gender' => $user->gender
+            ]
+        );
     }
 
     /**
@@ -50,60 +64,82 @@ class UserController
      *
      * @param Request $request Объект запроса, содержащий данные для обновления.
      * 
-     * @return Response Ответ, указывающий на результат операции.
+     * @param array<int, string> $errors Массив ошибок. 
+     * 
+     * @param array<string, string|int> $data Данные для обновления пользователя.
+     * 
+     * @return Response Ответ с результатом обновления.
+     * 
      */
     public function update(Request $request): Response
     {
-        if (!isset($_SESSION['id']) || isset($request->getData()['PUT']['id']) && $_SESSION['id'] !== (int) $request->getData()['PUT']['id']) {
+        $user = App::getService('user');
+        $data = $request->getData()['PUT'];
+
+        if (
+            !isset($_SESSION['id']) ||
+            !isset($data['id']) ||
+            !$user->isValidId((int) $data['id']) ||
+            $_SESSION['id'] !== (int) $data['id']
+        ) {
             return new Response('renderError', 'Доступ запрещен', 403);
         }
 
-        return App::getService('userService')->updateUser($request->getData()['PUT'], (int) $_SESSION['id'], $_SESSION['role']);
+        $errors = $user->allValidation($data);
+
+        if (count($errors) > 0) {
+            return new Response('json', Helper::showError(implode(' ', $errors)), 400);
+        }
+
+        $data = $user->update();
+
+        if (isset($data['code']) && $data['code'] === '23000') {
+            return new Response('json', Helper::showError('Пользователь с таким email уже существует'), 400);
+        }
+
+        $_SESSION['role'] = $user->role;
+
+        return new Response();
     }
 
     /**
-     * Метод для авторизации пользователя.
+     * Метод для выполнения входа пользователя.
      *
-     * @param Request $request Объект запроса, содержащий данные для авторизации.
+     * @param Request $request Объект запроса, содержащий данные для входа.
      * 
-     * @return Response JSON-ответ с результатом авторизации.
-     * 
-     * Метод проверяет наличие и корректность обязательных полей 'email' и 'password' в запросе.
-     * Если одно из полей отсутствует или некорректно, возвращается ошибка с кодом 400.
-     * Если данные корректны, вызывается метод loginUser сервиса userService.
-     * В случае успешной авторизации, данные пользователя сохраняются в сессии.
-     * Если авторизация не удалась, возвращается ошибка с кодом 401.
+     * @return Response Ответ в формате JSON с данными пользователя или сообщением об ошибке.
      */
     public function login(Request $request): Response
     {
         $email = null;
         $password = null;
+        $textError = 'Не все обязательные поля заполнены, или их значения не корректны';
         $requestParams = $request->getData()['POST'];
+        $user = App::getService('user');
 
-        if (isset($requestParams['email']) && User::isValidEmail($requestParams['email'])) {
-            $email = $requestParams['email'];
+        if (isset($requestParams['email']) && $user->isValidEmail($requestParams['email'])) {
+            $email = trim($requestParams['email']);
         }
 
-        if (isset($requestParams['password']) && User::isValidPassword($requestParams['password'])) {
-            $password = $requestParams['password'];
+        if (isset($requestParams['password']) && $user->isValidPassword($requestParams['password'])) {
+            $password = trim($requestParams['password']);
         }
 
         if ($email === null || $password === null) {
-            return new Response('json', Helper::showError('Не все обязательные поля заполнены, или их значения не корректны'), 400);
-        }
-
-        App::getService('userService')->loginUser($email, $password);
-
-        if (!App::issetClass('user')) {
-            return new Response('json', Helper::showError('Неправильный логин или пароль'), 401);
+            return new Response('json', Helper::showError($textError), 400);
         }
 
         $user = App::getService('user');
+        $data = $user->login($email, $password);
+
+        if ($data === null || $user->id === 0) {
+            return new Response('json', Helper::showError($textError), 400);
+        }
 
         $_SESSION['id'] = $user->id;
         $_SESSION['role'] = $user->role;
 
-        return new Response();
+        return new Response('json', $data);
     }
 
     /**
@@ -113,17 +149,16 @@ class UserController
      */
     public function logout(): Response
     {
-        $session = new Session();
-        $session->destroySession();
+        App::getService('session')->destroySession();
 
         return new Response();
     }
 
     /**
-     * Выполняет поиск пользователя по email.
+     * Ищет пользователя по email и возвращает его ID в формате JSON.
      *
      * @param array{0: string} $params Массив параметров, где первый элемент - email пользователя.
-     * @return Response Возвращает объект ответа.
+     * @return Response Ответ с JSON, содержащим ID пользователя, или сообщение об ошибке.
      */
     public function searchByEmail(array $params): Response
     {
@@ -131,7 +166,13 @@ class UserController
             return $response;
         }
 
-        return App::getService('userService')->searchUserByEmail($params[0]);
+        $user = App::getService('user')->get(['email' => $params[0]]);
+
+        if ($user === null) {
+            return new Response('renderError', 'Страница не найдена', 404);
+        }
+
+        return new Response('json', ['id' => $user['id']]);;
     }
 
     /**
@@ -160,8 +201,21 @@ class UserController
         }
 
         $url = $request->getData()['originUrl'] . $request->getRoute();
+        $expiresInMinutes = Config::getConfig('resetPassword.expiresInMinutes');
 
-        return App::getService('resetPasswordService')->createdResetPasswordAndSendEmail($email, $url, Config::getConfig('resetPassword.expiresInMinutes'));
+        $data = App::getService('resetPassword')->preparationAndSendEmail($email, $url, $expiresInMinutes);
+
+        if ($data === null) {
+            return new Response('json', Helper::showError(
+                'Не найден пользователь с email = ' .
+                    $email .
+                    ', или ещё не прошло ' .
+                    $expiresInMinutes .
+                    ' минут с момента последнего запроса'
+            ), 400);
+        }
+
+        return new Response('json', $data);
     }
 
     /**
@@ -208,6 +262,16 @@ class UserController
         $token = trim($request->getData()['GET']['token']);
         $password = trim($request->getData()['PUT']['password']);
 
-        return App::getService('resetPasswordService')->resetPassword($id, $token, $password);
+        $data =  App::getService('resetPassword')->resetPassword($id, $token, $password);
+
+        if ($data === null) {
+            return new Response('json', Helper::showError('Не найден пользователь или неверный, истёкший токен'), 400);
+        }
+
+        if ($data['status'] !== 'ok') {
+            return new Response('json', $data, 400);
+        }
+
+        return new Response('json', $data);
     }
 }

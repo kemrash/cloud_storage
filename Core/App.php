@@ -4,7 +4,7 @@ namespace Core;
 
 class App
 {
-    private const FOLDERS = ['Repositories', 'Services', 'Models'];
+    private const FOLDERS = ['Repositories', 'Services', 'Models', 'Core'];
     private static array $data = [];
 
     /**

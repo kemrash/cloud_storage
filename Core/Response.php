@@ -5,18 +5,18 @@ namespace Core;
 class Response
 {
     private string $type;
-    private mixed $data;
+    private string|array $data;
     private string $header;
     private int $statusCode;
 
     /**
      * Конструктор класса Response.
      *
-     * @param mixed $data Данные ответа.
+     * @param string|array<string, mixed> $data Данные ответа.
      * @param int $statusCode Код статуса HTTP (по умолчанию 200).
      * @param string $header Заголовок ответа (по умолчанию пустая строка).
      */
-    public function __construct(string $type = 'json', mixed $data = ['status' => 'ok'], int $statusCode = 200, string $header = '')
+    public function __construct(string $type = 'json', string|array $data = ['status' => 'ok'], int $statusCode = 200, string $header = '')
     {
         $this->type = $type;
         $this->data = $data;

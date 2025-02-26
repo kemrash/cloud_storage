@@ -248,7 +248,9 @@ class User
      */
     public function __get(string $name): string|int|null
     {
-        return $this->$name;
+        if (isset($this->$name)) {
+            return $this->$name;
+        }
     }
 
     /**
@@ -275,31 +277,60 @@ class User
      *
      * @param array<string, mixed> $params Ассоциативный массив параметров для поиска пользователя.
      * 
-     * @return array<string, mixed>|null Ассоциативный массив данных пользователя или null, если пользователь не найден или является системным пользователем.
+     * @return bool Возвращает true, если пользователь найден и данные успешно загружены, иначе false.
      */
-    public function get(array $params): ?array
+    public function get(array $params): bool
     {
         $data = Db::findOneBy(self::DB_NAME, $params, Config::getConfig('database.dbColumns.user'));
 
         if ($data === null || $data['id'] === Config::getConfig('app.idUserSystem')) {
-            return null;
+            return false;
         }
 
         foreach ($data as $key => $value) {
             $this->__set($key, $value);
         }
 
-        return $data;
+        return true;
     }
 
-    public function update()
+    public function update(array $data): array
     {
+        foreach ($data as $key => $value) {
+            $value = trim($value);
+
+            switch ($key) {
+                case 'email':
+                    $this->__set('email', $value);
+                    break;
+
+                case 'password':
+                    $value = password_hash($value, PASSWORD_DEFAULT);
+                    $this->__set('passwordEncrypted', $value);
+                    break;
+
+                case 'role':
+                    $this->__set('role', $value);
+                    break;
+
+                case 'age':
+                    $value = $value === '' ? null : $value;
+                    $this->__set('age', $value);
+                    break;
+
+                case 'gender':
+                    $value = $value === '' ? null : $value;
+                    $this->__set('gender', $value);
+                    break;
+            }
+        }
+
         $setParams = [
-            'email' => trim($this->email),
-            'passwordEncrypted' => trim($this->passwordEncrypted),
-            'role' => trim($this->role),
-            'age' => trim($this->age),
-            'gender' => trim($this->gender),
+            'email' => $this->email,
+            'passwordEncrypted' => $this->passwordEncrypted,
+            'role' => $this->role,
+            'age' => $this->age,
+            'gender' => $this->gender,
         ];
 
         return Db::updateOneBy(self::DB_NAME, $setParams, ['id' => $this->id], Config::getConfig('database.dbColumns.user'));
@@ -310,27 +341,20 @@ class User
      *
      * @param string $email Электронная почта пользователя.
      * @param string $password Пароль пользователя.
-     * @return array|null Возвращает массив с ключом 'status' и значением 'ok' при успешном входе, или null при неудаче.
+     * @return bool Возвращает true, если вход выполнен успешно, иначе false.
      */
-    public function login(string $email, string $password): ?array
+    public function login(string $email, string $password): bool
     {
-        $data = $this->get(['email' => $email]);
-
-        if ($data === null || !password_verify($password, $data['passwordEncrypted'])) {
-            return null;
+        if (!$this->get(['email' => $email]) || !password_verify($password, $this->passwordEncrypted)) {
+            return false;
         }
 
-        if (password_needs_rehash($data['passwordEncrypted'], PASSWORD_DEFAULT)) {
-            $data['passwordEncrypted'] = password_hash($password, PASSWORD_DEFAULT);
-
-            $this->updatePasswordById($data['id'], $data['passwordEncrypted']);
+        if (password_needs_rehash($this->passwordEncrypted, PASSWORD_DEFAULT)) {
+            $this->passwordEncrypted = password_hash($password, PASSWORD_DEFAULT);
+            $this->updatePasswordById();
         }
 
-        foreach ($data as $key => $value) {
-            $this->__set($key, $value);
-        }
-
-        return ['status' => 'ok'];
+        return true;
     }
 
     /**
@@ -433,15 +457,12 @@ class User
     }
 
     /**
-     * Обновляет зашифрованный пароль пользователя по его идентификатору.
-     *
-     * @param int $id Идентификатор пользователя.
-     * @param string $passwordEncrypted Зашифрованный пароль пользователя.
+     * Обновляет зашифрованный пароль пользователя в базе данных по его идентификатору.
      *
      * @return void
      */
-    private function updatePasswordById(int $id, string $passwordEncrypted): void
+    private function updatePasswordById(): void
     {
-        Db::updateOneBy(self::DB_NAME, ['passwordEncrypted' => $passwordEncrypted], ['id' => $id], Config::getConfig('database.dbColumns.user'));
+        Db::updateOneBy(self::DB_NAME, ['passwordEncrypted' => $this->passwordEncrypted], ['id' => $this->id], Config::getConfig('database.dbColumns.user'));
     }
 }

@@ -48,13 +48,13 @@ class ResetPassword
 
         $this->clearOld($createdAt);
 
-        $user = App::getService('user')->get(['email' => $email]);
+        $user = App::getService('user');
 
-        if ($user === null) {
+        if (!$user->get(['email' => $email])) {
             return null;
         }
 
-        $resetPassword = $this->getBy(['userId' => $user['id']]);
+        $resetPassword = $this->getBy(['userId' => $user->id]);
 
         if ($resetPassword !== null && DateTime::createFromFormat(Config::getConfig('app.dateTimeFormat'), $resetPassword['expiresAt']) >= $dateTime) {
             return null;
@@ -66,14 +66,14 @@ class ResetPassword
         $hashedToken = password_hash($token, PASSWORD_DEFAULT);
 
         $this->id = null;
-        $this->userId = $user['id'];
+        $this->userId = $user->id;
         $this->hashedToken = $hashedToken;
         $this->expiresAt = $expiresAt;
         $this->createdAt = $createdAt;
 
         $this->created();
 
-        $this->sendEmail($user['email'], $url, $token);
+        $this->sendEmail($user->email, $url, $token);
 
         return ['status' => 'ok'];
     }

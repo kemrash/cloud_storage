@@ -7,6 +7,7 @@ use Core\Config;
 use Core\Helper;
 use Core\Request;
 use Core\Response;
+use Models\User;
 use traits\UserTrait;
 
 class UserController
@@ -35,23 +36,22 @@ class UserController
     public function get(array $params): Response
     {
         $userId = $params[0];
-        $user = App::getService('user');
 
         if (!ctype_digit($userId)) {
             return new Response('renderError', 'Страница не найдена', 404);
         }
 
         $userId = (int) $userId;
+        $user = new User();
 
-        if (!isset($_SESSION['id']) || (int) $_SESSION['id'] !== (int) $userId) {
-            return new Response('renderError', 'Доступ запрещен', 403);
+        if (!$user->get(['id' => $userId])) {
+            return new Response('renderError', 'Страница не найдена', 404);
         }
 
         return new Response(
             'json',
             [
                 'id' => $user->id,
-                'email' => $user->email,
                 'role' => $user->role,
                 'age' => $user->age,
                 'gender' => $user->gender
@@ -79,7 +79,7 @@ class UserController
         if (
             !isset($_SESSION['id']) ||
             !isset($data['id']) ||
-            !$user->isValidId((int) $data['id']) ||
+            !ctype_digit($data['id']) ||
             $_SESSION['id'] !== (int) $data['id']
         ) {
             return new Response('renderError', 'Доступ запрещен', 403);
@@ -91,9 +91,9 @@ class UserController
             return new Response('json', Helper::showError(implode(' ', $errors)), 400);
         }
 
-        $data = $user->update();
+        $response = $user->update($data);
 
-        if (isset($data['code']) && $data['code'] === '23000') {
+        if (isset($response['code']) && $response['code'] === '23000') {
             return new Response('json', Helper::showError('Пользователь с таким email уже существует'), 400);
         }
 
@@ -130,16 +130,15 @@ class UserController
         }
 
         $user = App::getService('user');
-        $data = $user->login($email, $password);
 
-        if ($data === null || $user->id === 0) {
+        if (!$user->login($email, $password) || $user->id === 0) {
             return new Response('json', Helper::showError($textError), 400);
         }
 
         $_SESSION['id'] = $user->id;
         $_SESSION['role'] = $user->role;
 
-        return new Response('json', $data);
+        return new Response();
     }
 
     /**
@@ -166,13 +165,13 @@ class UserController
             return $response;
         }
 
-        $user = App::getService('user')->get(['email' => $params[0]]);
+        $user = new User();
 
-        if ($user === null) {
+        if (!$user->get(['email' => $params[0]])) {
             return new Response('renderError', 'Страница не найдена', 404);
         }
 
-        return new Response('json', ['id' => $user['id']]);;
+        return new Response('json', ['id' => $user->id]);;
     }
 
     /**

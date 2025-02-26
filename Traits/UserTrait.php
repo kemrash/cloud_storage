@@ -2,24 +2,27 @@
 
 namespace traits;
 
-use Core\Response;
-
 trait UserTrait
 {
     /**
-     * Проверяет авторизацию пользователя.
+     * Проверяет, является ли текущий пользователь администратором.
      *
-     * Если пользователь не авторизован (отсутствует идентификатор в сессии), 
-     * возвращает объект AccessDeniedResponse. В противном случае возвращает null.
-     *
-     * @return ?Response Объект AccessDeniedResponse или null, если пользователь авторизован.
+     * @return bool Возвращает true, если пользователь является администратором, иначе false.
      */
-    private function checkUserAuthorization(): ?Response
+    private function isAdmin(): bool
     {
-        if (!isset($_SESSION['id'])) {
-            return new Response('renderError', 'Доступ запрещен', 403);
-        }
+        return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+    }
 
-        return null;
+    /**
+     * Проверяет, выполнен ли вход пользователя.
+     *
+     * Метод проверяет, установлена ли сессия пользователя по наличию ключа 'id' в массиве $_SESSION.
+     *
+     * @return bool Возвращает true, если пользователь авторизован, иначе false.
+     */
+    private function isLogin(): bool
+    {
+        return isset($_SESSION['id']);
     }
 }

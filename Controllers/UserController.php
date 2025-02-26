@@ -8,11 +8,13 @@ use Core\Helper;
 use Core\Request;
 use Core\Response;
 use Models\User;
+use traits\StatusResponseTrait;
 use traits\UserTrait;
 
 class UserController
 {
     use UserTrait;
+    use StatusResponseTrait;
 
     /**
      * Метод для получения списка пользователей.
@@ -22,9 +24,8 @@ class UserController
     public function list(): Response
     {
         $data = App::getService('user')->list('id', 'role', 'age', 'gender');
-        $response = new Response('json', $data);
 
-        return $response;
+        return new Response('json', $data);
     }
 
     /**
@@ -38,14 +39,14 @@ class UserController
         $userId = $params[0];
 
         if (!ctype_digit($userId)) {
-            return new Response('renderError', 'Страница не найдена', 404);
+            return $this->pageNotFound();
         }
 
         $userId = (int) $userId;
         $user = new User();
 
         if (!$user->get(['id' => $userId])) {
-            return new Response('renderError', 'Страница не найдена', 404);
+            return $this->pageNotFound();
         }
 
         return new Response(
@@ -77,12 +78,12 @@ class UserController
         $data = $request->getData()['PUT'];
 
         if (
-            !isset($_SESSION['id']) ||
+            !$this->isLogin() ||
             !isset($data['id']) ||
             !ctype_digit($data['id']) ||
             $_SESSION['id'] !== (int) $data['id']
         ) {
-            return new Response('renderError', 'Доступ запрещен', 403);
+            return $this->accessForbidden();
         }
 
         $errors = $user->allValidation($data);
@@ -91,9 +92,9 @@ class UserController
             return new Response('json', Helper::showError(implode(' ', $errors)), 400);
         }
 
-        $response = $user->update($data);
+        $result = $user->update();
 
-        if (isset($response['code']) && $response['code'] === '23000') {
+        if (isset($result['code']) && $result['code'] === '23000') {
             return new Response('json', Helper::showError('Пользователь с таким email уже существует'), 400);
         }
 
@@ -161,14 +162,14 @@ class UserController
      */
     public function searchByEmail(array $params): Response
     {
-        if ($response = $this->checkUserAuthorization()) {
-            return $response;
+        if (!$this->isLogin()) {
+            return $this->accessForbidden();
         }
 
         $user = new User();
 
         if (!$user->get(['email' => $params[0]])) {
-            return new Response('renderError', 'Страница не найдена', 404);
+            return $this->pageNotFound();
         }
 
         return new Response('json', ['id' => $user->id]);;
@@ -183,7 +184,7 @@ class UserController
      */
     public function preparationResetPassword(Request $request): Response
     {
-        if (isset($_SESSION['id'])) {
+        if ($this->isLogin()) {
             return new Response('json', Helper::showError('Вошедший пользователь не может сбросить пароль'), 403);
         }
 
@@ -232,7 +233,7 @@ class UserController
      */
     public function resetPassword(Request $request): Response
     {
-        if (isset($_SESSION['id'])) {
+        if ($this->isLogin()) {
             return new Response('json', Helper::showError('Вошедший пользователь не может сбросить пароль'), 403);
         }
 

@@ -4,7 +4,9 @@ namespace Models;
 
 use Core\Config;
 use Core\Db;
+use Core\Helper;
 use Exception;
+use PDOException;
 
 class User
 {
@@ -248,9 +250,7 @@ class User
      */
     public function __get(string $name): string|int|null
     {
-        if (isset($this->$name)) {
-            return $this->$name;
-        }
+        return $this->$name;
     }
 
     /**
@@ -294,37 +294,57 @@ class User
         return true;
     }
 
-    public function update(array $data): array
+    public function create()
     {
-        foreach ($data as $key => $value) {
-            $value = trim($value);
+        $setParams = [
+            'email' => $this->email,
+            'passwordEncrypted' => $this->passwordEncrypted,
+            'role' => $this->role,
+            'age' => $this->age,
+            'gender' => $this->gender,
+        ];
 
-            switch ($key) {
-                case 'email':
-                    $this->__set('email', $value);
-                    break;
+        $connection = Db::$connection;
+        $connection->beginTransaction();
 
-                case 'password':
-                    $value = password_hash($value, PASSWORD_DEFAULT);
-                    $this->__set('passwordEncrypted', $value);
-                    break;
+        try {
+            $id = Db::insert(self::DB_NAME, $setParams, Config::getConfig('database.dbColumns.user'));
+            // $folder = new Folder((int) $id, Config::getConfig('app.idUserSystem'), 'home');
 
-                case 'role':
-                    $this->__set('role', $value);
-                    break;
+            // $folderId = App::getService('folderRepository')::addFolder($folder);
 
-                case 'age':
-                    $value = $value === '' ? null : $value;
-                    $this->__set('age', $value);
-                    break;
-
-                case 'gender':
-                    $value = $value === '' ? null : $value;
-                    $this->__set('gender', $value);
-                    break;
+            $connection->commit();
+        } catch (PDOException $e) {
+            if ($connection->inTransaction()) {
+                $connection->rollBack();
             }
+
+            $errorCode = $e->getCode();
+
+            if ($errorCode === '23000') {
+                $error = Helper::showError();
+                $error['code'] = $errorCode;
+
+                return $error;
+            }
+
+            throw new Exception(__CLASS__ . ': ' . $e->getMessage());
         }
 
+        return [
+            'status' => 'ok',
+            'id' => $id,
+            // 'folderId' => $folderId,
+        ];
+    }
+
+    /**
+     * Обновляет данные пользователя в базе данных.
+     *
+     * @return array Ассоциативный массив с результатом обновления.
+     */
+    public function update(): array
+    {
         $setParams = [
             'email' => $this->email,
             'passwordEncrypted' => $this->passwordEncrypted,
@@ -334,6 +354,39 @@ class User
         ];
 
         return Db::updateOneBy(self::DB_NAME, $setParams, ['id' => $this->id], Config::getConfig('database.dbColumns.user'));
+    }
+
+    public function delete(string $id)
+    {
+        $filesList = [];
+
+        $connection = Db::$connection;
+        $connection->beginTransaction();
+
+        try {
+            // $foldersList = App::getService('folderRepository')::getUserFoldersList((int) $id);
+
+            // foreach ($foldersList as $folder) {
+            //     $newFiles = App::getService('folderService')->deleteFolderAndReturnFilesList($folder['id'], true);
+
+            //     $filesList = [...$filesList, ...$newFiles];
+            // }
+
+            Db::deleteOneBy('user', ['id' => $id], Config::getConfig('database.dbColumns.user'));
+
+            $connection->commit();
+        } catch (Exception $e) {
+            if ($connection->inTransaction()) {
+                $connection->rollBack();
+            }
+
+            throw new Exception(__CLASS__ . ': ' . $e->getMessage());
+        }
+
+        // if (count($filesList) > 0) {
+        //     $fileStorage = new FileStorage();
+        //     $fileStorage->deleteFiles($filesList);
+        // }
     }
 
     /**
@@ -364,7 +417,7 @@ class User
      * 
      * @return array<int, string> Массив ошибок, если они есть.
      */
-    public function allValidation(array $params): array
+    public function allValidation(array $params, bool $isNotSelf = false): array
     {
         $errors = [];
 
@@ -376,12 +429,12 @@ class User
                         break;
                     }
 
-                    if ($this->role !== 'admin' && $this->email !== $params['email']) {
+                    if (!$isNotSelf && $this->role !== 'admin' && $this->email !== $params['email']) {
                         $errors[] = 'Только администратор может изменять email.';
                     }
 
                     try {
-                        $this->__set('email', $params['email']);
+                        $this->__set('email', trim($params['email']));
                     } catch (Exception $e) {
                         $errors[] = $e->getMessage();
                     }
@@ -406,13 +459,13 @@ class User
                         break;
                     }
 
-                    if ($this->role !== 'admin' && $this->role !== $params['role']) {
+                    if (!$isNotSelf && $this->role !== 'admin' && $this->role !== $params['role']) {
                         $errors[] = 'Только администратор может изменять role.';
                         break;
                     }
 
                     try {
-                        $this->__set('role', $params['role']);
+                        $this->__set('role', trim($params['role']));
                     } catch (Exception $e) {
                         $errors[] = $e->getMessage();
                     }
@@ -432,7 +485,7 @@ class User
                     }
 
                     try {
-                        $this->__set('age', $age);
+                        $this->__set('age', (int) trim($age));
                     } catch (Exception $e) {
                         $errors[] = $e->getMessage();
                     }
@@ -445,7 +498,7 @@ class User
                     }
 
                     try {
-                        $this->__set('gender', $params['gender']);
+                        $this->__set('gender', trim($params['gender']));
                     } catch (Exception $e) {
                         $errors[] = $e->getMessage();
                     }

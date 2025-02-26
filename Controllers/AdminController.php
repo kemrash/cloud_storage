@@ -3,11 +3,19 @@
 namespace Controllers;
 
 use Core\App;
+use Core\Config;
+use Core\Helper;
 use Core\Request;
 use Core\Response;
+use Models\User;
+use traits\StatusResponseTrait;
+use traits\UserTrait;
 
 class AdminController
 {
+    use UserTrait;
+    use StatusResponseTrait;
+
     /**
      * Возвращает список пользователей в формате JSON.
      *
@@ -15,38 +23,44 @@ class AdminController
      */
     public function list(): Response
     {
-        return !$this->isAdmin() ? $this->accessForbidden() : new Response('json', App::getService('adminService')->getUsersList());
+        if (!$this->isAdmin()) {
+            return $this->accessForbidden();
+        }
+
+        $data = App::getService('user')->list('id', 'email', 'role', 'age', 'gender');
+
+        return new Response('json', $data);
     }
 
-    /**
-     * Создает нового пользователя.
-     *
-     * Этот метод проверяет, является ли текущий пользователь администратором.
-     * Если пользователь не администратор, возвращается ответ с запретом доступа.
-     * Если пользователь администратор, вызывается сервис для создания нового пользователя.
-     *
-     * @param Request $request Объект запроса, содержащий данные POST.
-     * @return Response Ответ с результатом создания пользователя или запретом доступа.
-     */
     public function create(Request $request): Response
     {
-        if (!$this->isAdmin()) {
+        if (!$this->isAdmin() || !isset($request->getData()['POST'])) {
             return  $this->accessForbidden();
         }
 
-        return App::getService('adminService')->createUser($request->getData()['POST']);
+        $data = $request->getData()['POST'];
+
+        $user = new User();
+        $errors = $user->allValidation($data, true);
+
+        if (count($errors) > 0) {
+            return new Response('json', Helper::showError(implode(' ', $errors)), 400);
+        }
+
+        $result = $user->create();
+
+        if (isset($result['code']) && $result['code'] === '23000') {
+            return new Response('json', Helper::showError('Пользователь с таким email уже существует'), 400);
+        }
+
+        return new Response('json', $result);
     }
 
     /**
-     * Возвращает данные пользователя по его ID.
+     * Получает информацию о пользователе по его идентификатору.
      *
-     * Этот метод проверяет, является ли текущий пользователь администратором.
-     * Если пользователь не администратор, возвращается ответ с запретом доступа.
-     * Если пользователь администратор, вызывается сервис для получения данных пользователя по ID.
-     * Если пользователь с указанным ID не найден, возвращается ответ с ошибкой "Страница не найдена".
-     *
-     * @param array<string> $params Массив параметров, содержащий ID пользователя.
-     * @return Response JSON-ответ с данными пользователя или ответ с ошибкой доступа/страницы не найдена.
+     * @param array<int, string> $params Массив параметров, где первый элемент - идентификатор пользователя.
+     * @return Response Ответ с данными пользователя в формате JSON или сообщение об ошибке.
      */
     public function get(array $params): Response
     {
@@ -54,28 +68,54 @@ class AdminController
             return  $this->accessForbidden();
         }
 
-        $data = App::getService('adminService')->getUserById($params[0]);
+        $userId = $params[0];
 
-        if ($data === null) {
+        if (!ctype_digit($userId)) {
             return $this->pageNotFound();
         }
 
-        return new Response('json', $data);
+        $userId = (int) $userId;
+        $user = new User();
+
+        if (!$user->get(['id' => $userId])) {
+            return $this->pageNotFound();
+        }
+
+        return new Response(
+            'json',
+            [
+                'id' => $user->id,
+                'email' => $user->email,
+                'role' => $user->role,
+                'age' => $user->age,
+                'gender' => $user->gender
+            ]
+        );
     }
 
-    /**
-     * Удаляет пользователя по его идентификатору.
-     *
-     * @param array<string> $params Массив параметров, где первый элемент - идентификатор пользователя.
-     * @return Response Ответ после выполнения операции удаления.
-     */
     public function delete(array $params): Response
     {
         if (!$this->isAdmin()) {
             return  $this->accessForbidden();
         }
 
-        return App::getService('adminService')->deleteUserById($params[0]);
+        $userId = $params[0];
+
+        if (!ctype_digit($userId)) {
+            return $this->pageNotFound();
+        }
+
+        $userId = (int) $userId;
+
+        if ($userId === Config::getConfig('app.idUserSystem')) {
+            return new Response('json', Helper::showError('Нельзя удалять системного пользователя'));
+        }
+
+        $user = new User();
+        $user->delete($userId);
+        // return App::getService('adminService')->deleteUserById($params[0]);
+
+        return new Response();
     }
 
     /**
@@ -91,38 +131,33 @@ class AdminController
             return  $this->accessForbidden();
         }
 
-        $id = $params[0];
+        $data = $request->getData()['PUT'];
+        $userId = $params[0];
 
-        return App::getService('userService')->updateUser($request->getData()['PUT'], (int) $id, $_SESSION['role']);
-    }
+        if (!ctype_digit($userId)) {
+            return $this->pageNotFound();
+        }
 
-    /**
-     * Проверяет, является ли текущий пользователь администратором.
-     *
-     * @return bool Возвращает true, если пользователь является администратором, иначе false.
-     */
-    private function isAdmin(): bool
-    {
-        return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
-    }
+        $userId = (int) $userId;
 
-    /**
-     * Метод для возврата ответа о запрете доступа.
-     *
-     * @return Response Ответ с информацией о запрете доступа.
-     */
-    private function accessForbidden(): Response
-    {
-        return new Response('renderError', 'Доступ запрещен', 403);
-    }
+        $user = new User();
 
-    /**
-     * Возвращает ответ с ошибкой "Страница не найдена".
-     *
-     * @return Response Ответ с ошибкой "Страница не найдена".
-     */
-    private function pageNotFound(): Response
-    {
-        return new Response('renderError', 'Страница не найдена', 404);
+        if (!$user->get(['id' => $userId])) {
+            return $this->pageNotFound();
+        }
+
+        $errors = $user->allValidation($data, true);
+
+        if (count($errors) > 0) {
+            return new Response('json', Helper::showError(implode(' ', $errors)), 400);
+        }
+
+        $result = $user->update();
+
+        if (isset($result['code']) && $result['code'] === '23000') {
+            return new Response('json', Helper::showError('Пользователь с таким email уже существует'), 400);
+        }
+
+        return new Response();
     }
 }

@@ -6,13 +6,13 @@ use Core\App;
 use Core\Helper;
 use Core\Request;
 use Core\Response;
-use traits\PageTrait;
+use traits\StatusResponseTrait;
 use traits\UserTrait;
 
 class FolderController
 {
     use UserTrait;
-    use PageTrait;
+    use StatusResponseTrait;
 
     /**
      * Возвращает список папок пользователя.
@@ -21,11 +21,13 @@ class FolderController
      */
     public function list(): Response
     {
-        if ($response = $this->checkUserAuthorization()) {
-            return $response;
+        if (!$this->isLogin()) {
+            return $this->accessForbidden();
         }
 
-        return App::getService('folderService')->getUserFoldersList((int) $_SESSION['id']);
+        $data = App::getService('folder')->list((int) $_SESSION['id']);
+
+        return new Response('json', $data);
     }
 
     /**
@@ -36,8 +38,8 @@ class FolderController
      */
     public function add(Request $request): Response
     {
-        if ($response = $this->checkUserAuthorization()) {
-            return $response;
+        if (!$this->isLogin()) {
+            return $this->accessForbidden();
         }
 
         $validated = $this->getValidatedData($request, 'POST', 'parentId');
@@ -48,19 +50,36 @@ class FolderController
 
         [$userId, $parentId, $name] = $validated;
 
-        return App::getService('folderService')->createUserFolder($userId, $parentId, $name);
+        if ($parentId === 0) {
+            return new Response('json', Helper::showError('Нельзя создать еще одну корневую папку'), 400);
+        }
+
+        $folder = App::getService('folder');
+
+        if (!$folder->create($userId, $parentId, $name)) {
+            return new Response('json', Helper::showError('Папка с такими параметрами уже существует'), 400);
+        }
+
+        return new Response();
     }
 
     /**
      * Переименовывает папку пользователя.
      *
      * @param Request $request HTTP-запрос, содержащий данные для переименования папки.
-     * @return Response HTTP-ответ с результатом операции.
+     * @return Response HTTP-ответ, указывающий на результат операции.
+     *
+     * Метод проверяет, авторизован ли пользователь, валидирует входные данные и переименовывает папку.
+     * Если пользователь не авторизован, возвращается ответ с ошибкой доступа.
+     * Если входные данные не прошли валидацию, возвращается ответ с ошибкой валидации.
+     * Если папка не найдена, возвращается ответ с ошибкой "страница не найдена".
+     * Если папка с таким именем уже существует, возвращается ответ с ошибкой.
+     * В случае успешного переименования возвращается status ok.
      */
     public function rename(Request $request): Response
     {
-        if ($response = $this->checkUserAuthorization()) {
-            return $response;
+        if (!$this->isLogin()) {
+            return $this->accessForbidden();
         }
 
         $validated = $this->getValidatedData($request, 'PUT', 'id');
@@ -71,29 +90,58 @@ class FolderController
 
         [$userId, $id, $name] = $validated;
 
-        return App::getService('folderService')->renameUserFolder($userId, $id, $name);
+        $folder = App::getService('folder');
+
+        if (!$folder->get($userId, $id)) {
+            return $this->pageNotFound();
+        }
+
+        if (!$folder->rename($name)) {
+            return new Response('json', Helper::showError('Папка с таким названием уже существует в родительской папке'), 400);
+        }
+
+        return new Response();
     }
 
     /**
-     * Получает информацию о папке пользователя.
+     * Получает информацию о папке и её содержимом.
      *
-     * @param array<string> $params Массив параметров, где первый элемент - идентификатор папки.
-     * @return Response Ответ с информацией о папке или сообщение об ошибке.
+     * @param array<int, string> $params Массив параметров, где первый элемент - ID папки.
+     * @return Response Ответ в формате JSON с информацией о папке и её содержимом.
      */
     public function get(array $params): Response
     {
-        if ($response = $this->checkUserAuthorization()) {
-            return $response;
+        if (!$this->isLogin()) {
+            return $this->accessForbidden();
         }
 
-        if ($response = $this->checkNotFoundPage($params[0])) {
-            return $response;
+        if (!isset($params[0]) || !ctype_digit($params[0])) {
+            return $this->pageNotFound();
         }
 
         $userId = (int) $_SESSION['id'];
         $folderId = (int) $params[0];
 
-        return App::getService('folderService')->getUserFolder($userId, $folderId);
+        $folder = App::getService('folder');
+
+        if (!$folder->get($userId, $folderId)) {
+            return $this->pageNotFound();
+        }
+
+        $files = App::getService('file')->getFilesInFolder($folderId);
+
+        $result = [
+            'id' => $folderId,
+            'userId' => $userId,
+            'parentId' => $folder->parentId,
+            'name' => $folder->name,
+            'content' => [
+                'folders' => $folder->getFoldersInFolder(),
+                'files' => $files,
+            ],
+        ];
+
+        return new Response('json', $result);
     }
 
     /**
@@ -104,18 +152,30 @@ class FolderController
      */
     public function remove(array $params): Response
     {
-        if ($response = $this->checkUserAuthorization()) {
-            return $response;
+        if (!$this->isLogin()) {
+            return $this->accessForbidden();
         }
 
-        if ($response = $this->checkNotFoundPage($params[0])) {
-            return $response;
+        if (!isset($params[0]) || !ctype_digit($params[0])) {
+            return $this->pageNotFound();
         }
 
         $userId = (int) $_SESSION['id'];
         $folderId = (int) $params[0];
 
-        return App::getService('folderService')->removeUserFolder($userId, $folderId);
+        $folder = App::getService('folder');
+
+        if (!$folder->get($userId, $folderId)) {
+            return $this->pageNotFound();
+        }
+
+        if ($folder->parentId === 0) {
+            return new Response('json', Helper::showError('Нельзя удалить корневую папку'), 400);
+        }
+
+        $folder->delete();
+
+        return new Response();
     }
 
     /**

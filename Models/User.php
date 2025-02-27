@@ -2,6 +2,7 @@
 
 namespace Models;
 
+use Core\App;
 use Core\Config;
 use Core\Db;
 use Core\Helper;
@@ -294,7 +295,14 @@ class User
         return true;
     }
 
-    public function create()
+    /**
+     * Создает нового пользователя в базе данных и создает домашнюю папку для пользователя.
+     *
+     * @return array<string, string|int> Возвращает массив с информацией о статусе операции, идентификаторе пользователя и идентификаторе папки,
+     * или массив с ошибкой.
+     * @throws Exception Если произошла ошибка при выполнении запроса к базе данных.
+     */
+    public function create(): array
     {
         $setParams = [
             'email' => $this->email,
@@ -309,9 +317,8 @@ class User
 
         try {
             $id = Db::insert(self::DB_NAME, $setParams, Config::getConfig('database.dbColumns.user'));
-            // $folder = new Folder((int) $id, Config::getConfig('app.idUserSystem'), 'home');
-
-            // $folderId = App::getService('folderRepository')::addFolder($folder);
+            $folder = App::getService('folder');
+            $folder->create((int) $id, Config::getConfig('app.idUserSystem'), 'home');
 
             $connection->commit();
         } catch (PDOException $e) {
@@ -334,7 +341,7 @@ class User
         return [
             'status' => 'ok',
             'id' => $id,
-            // 'folderId' => $folderId,
+            'folderId' => $folder->id,
         ];
     }
 

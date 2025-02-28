@@ -387,6 +387,8 @@ class FilesController
         if ($filesStorage->fileForceDownload($file->serverName, $file->origenName, $file->mimeType) === false) {
             return $this->pageNotFound();
         }
+
+        return new Response();
     }
 
     /**

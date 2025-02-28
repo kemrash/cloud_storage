@@ -31,6 +31,8 @@ class ResetPassword
         if (isset($this->$name)) {
             return $this->$name;
         }
+
+        return null;
     }
 
     /**

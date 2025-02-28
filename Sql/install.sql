@@ -47,9 +47,11 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`id`, `email`, `passwordEncrypted`, `role`, `age`, `gender`) VALUES
 (0, 'system', '$2y$10$hJ7RJaMLfRDKA96I9DOJperRQs8ZQZ1fJcyW9QZfVw8PMxBTXvQli', 'user', NULL, NULL);
+
 ALTER TABLE `file`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `serverName` (`serverName`);
+  ADD UNIQUE KEY `serverName` (`serverName`),
+  ADD UNIQUE KEY `folderId` (`folderId`,`origenName`) USING BTREE;
 
 ALTER TABLE `folder`
   ADD PRIMARY KEY (`id`),

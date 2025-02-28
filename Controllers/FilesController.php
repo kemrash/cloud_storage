@@ -33,6 +33,12 @@ class FilesController
         return new Response('json', $data);
     }
 
+    /**
+     * Получает информацию о файле по его идентификатору.
+     *
+     * @param array{0: string} $params Массив параметров, где первый элемент - идентификатор файла.
+     * @return Response Ответ с информацией о файле в формате JSON.
+     */
     public function getFile(array $params): Response
     {
         if (!$this->isLogin()) {

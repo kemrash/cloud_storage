@@ -72,7 +72,6 @@ class ResetPassword
         $this->createdAt = $createdAt;
 
         $this->created();
-
         $this->sendEmail($user->email, $url, $token);
 
         return ['status' => 'ok'];

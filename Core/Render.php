@@ -2,6 +2,8 @@
 
 namespace Core;
 
+use Exception;
+
 class Render
 {
     private string $templateName;
@@ -23,14 +25,14 @@ class Render
      * Метод для получения отрендеренного шаблона.
      *
      * @return string Возвращает строку с отрендеренным шаблоном.
-     * @throws AppException Если файл шаблона не найден или не удается его прочитать.
+     * @throws Exception Если файл шаблона не найден или не удается его прочитать.
      */
     public function getRender(): string
     {
         $fullPathFile = './templates/' . $this->templateName;
 
         if (!isset($fullPathFile) || !$data = file_get_contents($fullPathFile)) {
-            throw new AppException(__CLASS__, "Файл {$this->templateName} не найден, или не удается его прочитать");
+            throw new Exception(__CLASS__ . ": Файл {$this->templateName} не найден, или не удается его прочитать");
         }
 
         foreach ($this->renderData as $key => $value) {

@@ -106,6 +106,12 @@ class AdminController
         );
     }
 
+    /**
+     * Удаляет пользователя по его идентификатору.
+     *
+     * @param array<int, string> $params Массив параметров, где первый элемент - идентификатор пользователя.
+     * @return Response Ответ на запрос.
+     */
     public function delete(array $params): Response
     {
         if (!$this->isAdmin()) {
@@ -125,8 +131,12 @@ class AdminController
         }
 
         $user = new User();
-        $user->delete($userId);
-        // return App::getService('adminService')->deleteUserById($params[0]);
+
+        if (!$user->get(['id' => $userId])) {
+            return $this->pageNotFound();
+        }
+
+        $user->delete();
 
         return new Response();
     }

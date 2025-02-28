@@ -146,7 +146,9 @@ class Folder
 
             $connection->commit();
         } catch (PDOException $e) {
-            $connection->rollBack();
+            if ($connection->inTransaction()) {
+                $connection->rollBack();
+            }
 
             throw new Exception(__CLASS__ . ': ' . $e->getMessage());
         }

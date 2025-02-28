@@ -2,26 +2,28 @@
 
 namespace Controllers;
 
-use Core\App;
+use Core\Install;
 use Core\Request;
 use Core\Response;
+use traits\StatusResponseTrait;
 
 class InstallController
 {
-    /**
-     * Выполняет установку приложения.
-     *
-     * @param Request $request Объект запроса, содержащий данные для установки.
-     * 
-     * @return Response Возвращает объект ответа, который может быть либо PageNotFoundResponse, если файл конфигурации уже существует,
-     * либо результат выполнения метода install сервиса установки.
-     */
+    use StatusResponseTrait;
+
     public function install(Request $request): Response
     {
         if (file_exists('./config.php')) {
-            return new Response('renderError', 'Страница не найдена', 404);
+            return $this->pageNotFound();
         }
 
-        return App::getService('installService')->install($request->getData()['POST']);
+        $install = new Install($request->getData()['POST']);
+        $data = $install->run();
+
+        if ($data['status'] !== 'ok') {
+            return new Response('json', $data, 400);
+        }
+
+        return new Response();
     }
 }

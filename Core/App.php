@@ -2,9 +2,14 @@
 
 namespace Core;
 
+use Exception;
+use traits\StatusResponseTrait;
+
 class App
 {
-    private const FOLDERS = ['Repositories', 'Services', 'Models', 'Core'];
+    use StatusResponseTrait;
+
+    private const FOLDERS = ['Models', 'Core'];
     private static array $data = [];
 
     /**
@@ -12,7 +17,7 @@ class App
      *
      * @param string $loverFirsLatterServiceName Имя сервиса с первой строчной буквой.
      * @return mixed Экземпляр сервиса или репозитория.
-     * @throws AppException Если сервис или репозиторий не найден.
+     * @throws Exception Если сервис или репозиторий не найден.
      */
     public static function getService(string $loverFirsLatterServiceName): mixed
     {
@@ -24,36 +29,15 @@ class App
 
         foreach (self::FOLDERS as $folder) {
             if (class_exists($folder . '\\' . $className)) {
-                self::$data[$loverFirsLatterServiceName] = $folder === 'Repositories' ?
-                    ($folder . '\\' . $className) :
-                    self::$data[$loverFirsLatterServiceName] = new ($folder . '\\' . $className)();
+                self::$data[$loverFirsLatterServiceName] = self::$data[$loverFirsLatterServiceName] = new ($folder . '\\' . $className)();
             }
         }
 
         if (!isset(self::$data[$loverFirsLatterServiceName])) {
-            throw new AppException(__CLASS__, 'Не найден сервис или репозиторий');
+            throw new Exception(__CLASS__ . ': ' . 'Не найден сервис или репозиторий');
         }
 
         return self::$data[$loverFirsLatterServiceName];
-    }
-
-    /**
-     * Регистрирует новый сервис в приложении.
-     *
-     * @param string $name Название сервиса.
-     * @param mixed $service Экземпляр сервиса.
-     * 
-     * @throws AppException Если сервис с таким названием уже зарегистрирован.
-     * 
-     * @return void
-     */
-    public static function setService(string $name, mixed $service): void
-    {
-        if (isset(self::$data[$name])) {
-            throw new AppException(__CLASS__, 'Такое название уже зарегистрировано');
-        }
-
-        self::$data[$name] = $service;
     }
 
     /**
@@ -93,7 +77,7 @@ class App
         $response = $router->processRequest($request);
 
         if ($response === null) {
-            $response = new Response('renderError', 'Страница не найдена', 404);
+            $response = self::pageNotFound();
         }
 
         http_response_code($response->getStatusCode());

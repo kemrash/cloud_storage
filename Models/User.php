@@ -363,23 +363,31 @@ class User
         return Db::updateOneBy(self::DB_NAME, $setParams, ['id' => $this->id], Config::getConfig('database.dbColumns.user'));
     }
 
-    public function delete(string $id)
+    /**
+     * Удаляет пользователя и связанные с ним файлы и папки из базы данных.
+     *
+     * Метод выполняет следующие действия:
+     * 1. Получает список файлов, связанных с пользователем.
+     * 2. Начинает транзакцию.
+     * 3. Удаляет записи о файлах, папках и пользователе из базы данных.
+     * 4. Фиксирует транзакцию, если все операции прошли успешно.
+     * 5. В случае ошибки откатывает транзакцию и выбрасывает исключение.
+     * 6. Удаляет файлы из хранилища, если список файлов не пуст.
+     *
+     * @throws Exception Если произошла ошибка при удалении данных из базы данных.
+     */
+    public function delete(): void
     {
         $filesList = [];
+        $filesList = App::getService('file')->list($this->id);
 
         $connection = Db::$connection;
         $connection->beginTransaction();
 
         try {
-            // $foldersList = App::getService('folderRepository')::getUserFoldersList((int) $id);
-
-            // foreach ($foldersList as $folder) {
-            //     $newFiles = App::getService('folderService')->deleteFolderAndReturnFilesList($folder['id'], true);
-
-            //     $filesList = [...$filesList, ...$newFiles];
-            // }
-
-            Db::deleteOneBy('user', ['id' => $id], Config::getConfig('database.dbColumns.user'));
+            Db::deleteOneBy('file', ['userId' => $this->id], Config::getConfig('database.dbColumns.file'));
+            Db::deleteOneBy('folder', ['userId' => $this->id], Config::getConfig('database.dbColumns.folder'));
+            Db::deleteOneBy(self::DB_NAME, ['id' => $this->id], Config::getConfig('database.dbColumns.user'));
 
             $connection->commit();
         } catch (Exception $e) {
@@ -390,10 +398,11 @@ class User
             throw new Exception(__CLASS__ . ': ' . $e->getMessage());
         }
 
-        // if (count($filesList) > 0) {
-        //     $fileStorage = new FileStorage();
-        //     $fileStorage->deleteFiles($filesList);
-        // }
+        if (count($filesList) === 0) {
+            return;
+        }
+
+        App::getService('fileStorage')->deleteFiles($filesList);
     }
 
     /**

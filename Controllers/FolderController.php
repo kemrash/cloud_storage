@@ -56,6 +56,10 @@ class FolderController
 
         $folder = App::getService('folder');
 
+        if (!$folder->get($userId, $parentId)) {
+            return $this->pageNotFound();
+        }
+
         if (!$folder->create($userId, $parentId, $name)) {
             return new Response('json', Helper::showError('Папка с такими параметрами уже существует'), 400);
         }

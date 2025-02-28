@@ -11,12 +11,25 @@ class Install
     private array $data;
     private array $config;
 
+    /**
+     * Конструктор класса.
+     *
+     * @param array<string, mixed> $data Массив данных для инициализации.
+     */
     public function __construct(array $data)
     {
         $this->data = $data;
         $this->config = require_once self::PATH_CONFIG . '.bak';
     }
 
+    /**
+     * Выполняет установку системы, включая проверку данных, подключение к базе данных,
+     * выполнение SQL-скрипта и создание начальных записей в базе данных.
+     *
+     * @return array{
+     *     status: string
+     * } Возвращает массив с ключом 'status', который указывает на результат выполнения ('ok' или сообщение об ошибке).
+     */
     public function run(): array
     {
         $result = $this->validateAndPrepareData();
@@ -75,6 +88,32 @@ class Install
         return ['status' => 'ok'];
     }
 
+    /**
+     * Валидирует и подготавливает данные для установки.
+     *
+     * @return array Статус выполнения операции.
+     *
+     * @throws InvalidArgumentException Если одно из обязательных полей не заполнено или имеет неверный формат.
+     *
+     * Поля в массиве $this->data:
+     * - string 'dbHost' Обязательное поле, строка.
+     * - string 'dbName' Обязательное поле, строка.
+     * - string 'adminUser' Обязательное поле, строка, валидный email, длина меньше 150 символов.
+     * - string 'adminPassword' Обязательное поле, строка, длина меньше 255 символов.
+     *
+     * Поля в массиве $this->config:
+     * - array 'database' Настройки базы данных:
+     *   - string 'host' Хост базы данных.
+     *   - string 'name' Имя базы данных.
+     *   - string 'user' Пользователь базы данных.
+     *   - string 'password' Пароль базы данных.
+     * - array 'mailSMTP' Настройки SMTP:
+     *   - string 'host' Хост SMTP.
+     *   - int 'port' Порт SMTP.
+     *   - string 'user' Пользователь SMTP.
+     *   - string 'password' Пароль SMTP.
+     *   - string 'from' Адрес отправителя.
+     */
     public function validateAndPrepareData()
     {
         if (

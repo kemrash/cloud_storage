@@ -14,7 +14,7 @@ class Mail
      * @param string $title Тема письма.
      * @param string $message Текст сообщения.
      *
-     * @throws AppException В случае ошибки при отправке письма.
+     * @throws Exception В случае ошибки при отправке письма.
      */
     public function sendEmail(string $address, string $title, string $message): void
     {
@@ -43,7 +43,7 @@ class Mail
                 Helper::writeLog(self::class . ': ' . $mail->ErrorInfo);
             }
         } catch (Exception $e) {
-            throw new AppException(__CLASS__, $e->getMessage());
+            throw new Exception(__CLASS__ . ': ' . $e->getMessage());
         }
     }
 }

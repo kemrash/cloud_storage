@@ -2,6 +2,8 @@
 
 namespace Core;
 
+use Exception;
+
 class Config
 {
     private static array $config;
@@ -33,7 +35,7 @@ class Config
                     return $default;
                 }
 
-                throw new AppException(__CLASS__, 'Несуществующий элемент конфигурации.');
+                throw new Exception(__CLASS__ . ': Несуществующий элемент конфигурации.');
             }
 
             $value = $value[$k];

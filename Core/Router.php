@@ -2,6 +2,8 @@
 
 namespace Core;
 
+use Exception;
+
 class Router
 {
     private const ROUTES = [
@@ -101,7 +103,7 @@ class Router
      *
      * @param Request $request Входящий HTTP-запрос.
      * @return Response|null Возвращает объект ответа или null, если маршрут не найден.
-     * @throws AppException Если контроллер или метод не найдены.
+     * @throws Exception Если контроллер или метод не найдены.
      */
     public function processRequest(Request $request): ?Response
     {
@@ -137,7 +139,7 @@ class Router
         $controllerClass = 'Controllers\\' . $controllerClass;
 
         if (!class_exists($controllerClass) || !method_exists($controllerClass, $methodName)) {
-            throw new AppException(__CLASS__, 'Не найден контроллер или экшен');
+            throw new Exception(__CLASS__ . ': Не найден контроллер или экшен');
         }
 
         $controller = new $controllerClass();

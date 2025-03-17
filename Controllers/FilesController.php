@@ -9,8 +9,8 @@ use Core\Request;
 use Core\Response;
 use Flow\Request as FlowRequest;
 use Models\User;
-use traits\StatusResponseTrait;
-use traits\UserTrait;
+use Traits\StatusResponseTrait;
+use Traits\UserTrait;
 
 class FilesController
 {

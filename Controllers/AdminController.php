@@ -8,8 +8,8 @@ use Core\Helper;
 use Core\Request;
 use Core\Response;
 use Models\User;
-use traits\StatusResponseTrait;
-use traits\UserTrait;
+use Traits\StatusResponseTrait;
+use Traits\UserTrait;
 
 class AdminController
 {

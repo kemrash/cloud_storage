@@ -5,7 +5,7 @@ namespace Controllers;
 use Core\Install;
 use Core\Request;
 use Core\Response;
-use traits\StatusResponseTrait;
+use Traits\StatusResponseTrait;
 
 class InstallController
 {

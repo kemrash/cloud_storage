@@ -54,7 +54,7 @@ class Install
                 'Поля dbHost, dbName, dbUser, dbPassword обязательны ');
         }
 
-        $sqlPath = './sql/install.sql';
+        $sqlPath = './Sql/install.sql';
 
         if (file_exists($sqlPath) === false) {
             $textError = 'Не удалось найти файл базы данных';

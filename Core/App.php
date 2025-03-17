@@ -3,7 +3,7 @@
 namespace Core;
 
 use Exception;
-use traits\StatusResponseTrait;
+use Traits\StatusResponseTrait;
 
 class App
 {

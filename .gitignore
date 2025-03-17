@@ -1,6 +1,6 @@
 .vscode
 error.log
-Vendor
-storage/*
-chunks_temp_folder/*
+vendor
+storage
+chunks_temp_folder
 /config.php
